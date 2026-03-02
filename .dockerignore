@@ -9,4 +9,7 @@
 .travis.yml
 venv
 .git
-.envs/
+.envs/.local/.django
+.envs/.local/.postgres
+.envs/.production/.django
+.envs/.production/.postgres
