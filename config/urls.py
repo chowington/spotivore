@@ -23,6 +23,7 @@ urlpatterns = [
     # User management
     path("users/", include("spotivore.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
+    path("spotify/", include("spotivore.spotify.urls", namespace="spotify")),
     # Your stuff: custom urls includes go here
     # ...
     # Media files
@@ -36,6 +37,7 @@ if settings.DEBUG:
 urlpatterns += [
     # API base url
     path("api/", include("config.api_router")),
+    path("api/spotify/", include("spotivore.spotify.api.urls", namespace="spotify_api")),
     # DRF auth token
     path("api/auth-token/", obtain_auth_token),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),

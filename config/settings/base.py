@@ -85,6 +85,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "spotivore.music",
+    "spotivore.spotify",
     "spotivore.users",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -308,3 +309,25 @@ SPECTACULAR_SETTINGS = {
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+SPOTIFY_CLIENT_ID = env("SPOTIFY_CLIENT_ID", default="")
+SPOTIFY_CLIENT_SECRET = env("SPOTIFY_CLIENT_SECRET", default="")
+SPOTIFY_REDIRECT_URI = env("SPOTIFY_REDIRECT_URI", default="")
+SPOTIFY_SCOPES = env.list(
+    "SPOTIFY_SCOPES",
+    default=[
+        "playlist-read-collaborative",
+        "playlist-modify-private",
+        "playlist-modify-public",
+        "playlist-read-private",
+        "user-read-email",
+        "user-read-private",
+        "user-modify-playback-state",
+        "streaming",
+    ],
+)
+SPOTIFY_AUTH_SUCCESS_URL = env("SPOTIFY_AUTH_SUCCESS_URL", default="/")
+SPOTIFY_AUTH_FAILURE_URL = env("SPOTIFY_AUTH_FAILURE_URL", default="/")
+SPOTIFY_TOKEN_REFRESH_LEEWAY_SECONDS = env.int(
+    "SPOTIFY_TOKEN_REFRESH_LEEWAY_SECONDS",
+    default=60,
+)
