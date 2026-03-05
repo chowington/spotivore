@@ -4,6 +4,7 @@ from urllib.parse import urlsplit
 from urllib.parse import urlunsplit
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
@@ -84,11 +85,18 @@ class SpotifyCallbackView(View):
                     with_query_params(failure_url, spotify_error="account_already_connected"),
                 )
             defaults = service.build_connection_defaults(token_payload, profile_payload)
+            existing_refresh_token = (
+                SpotifyConnection.objects.filter(user=request.user)
+                .values_list("refresh_token", flat=True)
+                .first()
+            )
+            if not defaults["refresh_token"] and existing_refresh_token:
+                defaults["refresh_token"] = existing_refresh_token
             SpotifyConnection.objects.update_or_create(
                 user=request.user,
                 defaults=defaults,
             )
-        except (IntegrityError, KeyError, SpotifyAPIError):
+        except (ImproperlyConfigured, IntegrityError, KeyError, SpotifyAPIError):
             return HttpResponseRedirect(
                 with_query_params(failure_url, spotify_error="callback_failed"),
             )

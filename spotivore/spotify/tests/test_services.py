@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 import pytest
 from django.test import RequestFactory
-from django.test import override_settings
 from django.utils import timezone
 
 from spotivore.spotify.services import SpotifyOAuthService
@@ -25,13 +24,14 @@ class DummyHTTPResponse:
         return False
 
 
-@override_settings(
-    SPOTIFY_CLIENT_ID="spotify-client-id",
-    SPOTIFY_CLIENT_SECRET="spotify-client-secret",
-    SPOTIFY_SCOPES=("playlist-read-private", "user-read-email"),
-    SPOTIFY_REDIRECT_URI="",
-    SPOTIFY_TOKEN_REFRESH_LEEWAY_SECONDS=60,
-)
+@pytest.fixture(autouse=True)
+def spotify_settings(settings):
+    settings.SPOTIFY_CLIENT_ID = "spotify-client-id"
+    settings.SPOTIFY_CLIENT_SECRET = "spotify-client-secret"
+    settings.SPOTIFY_SCOPES = ("playlist-read-private", "user-read-email")
+    settings.SPOTIFY_REDIRECT_URI = ""
+    settings.SPOTIFY_TOKEN_REFRESH_LEEWAY_SECONDS = 60
+
 @pytest.mark.django_db
 class TestSpotifyOAuthService:
     def test_build_redirect_uri_uses_callback_route(self):
@@ -67,4 +67,3 @@ class TestSpotifyOAuthService:
         assert connection.access_token == "new-access-token"
         assert connection.refresh_token == "refresh-me"
         assert connection.expires_at > timezone.now()
-

@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework import serializers
 
 from spotivore.spotify.models import SpotifyConnection
@@ -10,6 +12,7 @@ class SpotifyAuthorizeURLSerializer(serializers.Serializer):
 class SpotifyConnectionSerializer(serializers.ModelSerializer):
     connected = serializers.SerializerMethodField()
     scopes = serializers.SerializerMethodField()
+    expires_at = serializers.DateTimeField(default_timezone=datetime.timezone.utc)
 
     class Meta:
         model = SpotifyConnection

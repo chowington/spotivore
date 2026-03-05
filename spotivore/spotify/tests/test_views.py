@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 from django.test import Client
 from django.urls import reverse
+from django.utils import timezone
 
 from spotivore.spotify.models import SpotifyConnection
 from spotivore.users.models import User
@@ -40,7 +41,7 @@ class CallbackSpotifyServiceStub:
             "refresh_token": token_payload["refresh_token"],
             "token_type": token_payload["token_type"],
             "scope": token_payload["scope"],
-            "expires_at": profile_payload.get("expires_at"),
+            "expires_at": timezone.now(),
         }
 
 
@@ -72,4 +73,3 @@ class TestSpotifyCallbackView:
         assert connection.email == "spotify@example.com"
         assert connection.access_token == "access-token"
         assert connection.refresh_token == "refresh-token"
-

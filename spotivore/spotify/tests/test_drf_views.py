@@ -96,7 +96,7 @@ class TestSpotifyAPIViews:
         assert not SpotifyConnection.objects.filter(user=user).exists()
 
     def test_playlist_list_returns_spotify_playlists(self, user: User, api_client: APIClient):
-        SpotifyConnectionFactory(user=user)
+        connection = SpotifyConnectionFactory(user=user)
         api_client.force_login(user)
         service = StubSpotifyService()
 
@@ -109,7 +109,7 @@ class TestSpotifyAPIViews:
                 "spotify_id": "1234567890123456789012",
                 "name": "Road Trip",
                 "description": "",
-                "owner_name": "Spotify User 0",
+                "owner_name": connection.display_name,
                 "is_public": False,
                 "track_count": 42,
             },
@@ -137,4 +137,3 @@ class TestSpotifyAPIViews:
                 "uri": f"spotify:track:{spotify_id}",
             },
         ]
-
