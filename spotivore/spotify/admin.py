@@ -8,4 +8,3 @@ class SpotifyConnectionAdmin(admin.ModelAdmin):
     list_display = ["user", "spotify_user_id", "display_name", "expires_at", "modified"]
     search_fields = ["user__username", "spotify_user_id", "display_name", "email"]
     list_select_related = ["user"]
-

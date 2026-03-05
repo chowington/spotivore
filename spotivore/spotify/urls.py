@@ -7,4 +7,3 @@ app_name = "spotify"
 urlpatterns = [
     path("callback/", SpotifyCallbackView.as_view(), name="callback"),
 ]
-

@@ -34,4 +34,3 @@ class SpotifyConnection(models.Model):
 
     def is_expired(self, leeway_seconds: int = 0) -> bool:
         return self.expires_at <= timezone.now() + timedelta(seconds=leeway_seconds)
-

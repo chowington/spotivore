@@ -25,4 +25,3 @@ def test_spotify_playlist_urls():
         resolve(f"/api/spotify/playlists/{spotify_id}/tracks/").view_name
         == "spotify_api:playlist-tracks"
     )
-

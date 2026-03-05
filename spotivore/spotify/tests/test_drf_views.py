@@ -31,7 +31,9 @@ class StubSpotifyService:
             },
         ]
 
-    def get_playlist_tracks(self, connection: SpotifyConnection, spotify_id: str) -> list[dict]:
+    def get_playlist_tracks(
+        self, connection: SpotifyConnection, spotify_id: str
+    ) -> list[dict]:
         return [
             {
                 "position": 0,
@@ -54,14 +56,19 @@ class TestSpotifyAPIViews:
         api_client.force_login(user)
         service = StubSpotifyService()
 
-        with patch("spotivore.spotify.api.views.get_spotify_oauth_service", return_value=service):
+        with patch(
+            "spotivore.spotify.api.views.get_spotify_oauth_service",
+            return_value=service,
+        ):
             response = api_client.get(
                 reverse("spotify_api:auth-url"),
                 {"next": "/client/spotify"},
             )
 
         assert response.status_code == 200
-        assert response.json()["authorize_url"].startswith("https://accounts.spotify.com/authorize?")
+        assert response.json()["authorize_url"].startswith(
+            "https://accounts.spotify.com/authorize?"
+        )
         session = api_client.session
         assert session["spotify_oauth_state"]
         assert session["spotify_oauth_next"] == "/client/spotify"
@@ -86,7 +93,9 @@ class TestSpotifyAPIViews:
             "expires_at": connection.expires_at.isoformat().replace("+00:00", "Z"),
         }
 
-    def test_delete_connection_disconnects_user(self, user: User, api_client: APIClient):
+    def test_delete_connection_disconnects_user(
+        self, user: User, api_client: APIClient
+    ):
         SpotifyConnectionFactory(user=user)
         api_client.force_login(user)
 
@@ -95,12 +104,17 @@ class TestSpotifyAPIViews:
         assert response.status_code == 204
         assert not SpotifyConnection.objects.filter(user=user).exists()
 
-    def test_playlist_list_returns_spotify_playlists(self, user: User, api_client: APIClient):
+    def test_playlist_list_returns_spotify_playlists(
+        self, user: User, api_client: APIClient
+    ):
         connection = SpotifyConnectionFactory(user=user)
         api_client.force_login(user)
         service = StubSpotifyService()
 
-        with patch("spotivore.spotify.api.views.get_spotify_oauth_service", return_value=service):
+        with patch(
+            "spotivore.spotify.api.views.get_spotify_oauth_service",
+            return_value=service,
+        ):
             response = api_client.get(reverse("spotify_api:playlist-list"))
 
         assert response.status_code == 200
@@ -115,15 +129,22 @@ class TestSpotifyAPIViews:
             },
         ]
 
-    def test_playlist_tracks_returns_spotify_tracks(self, user: User, api_client: APIClient):
+    def test_playlist_tracks_returns_spotify_tracks(
+        self, user: User, api_client: APIClient
+    ):
         SpotifyConnectionFactory(user=user)
         api_client.force_login(user)
         service = StubSpotifyService()
         spotify_id = "1234567890123456789012"
 
-        with patch("spotivore.spotify.api.views.get_spotify_oauth_service", return_value=service):
+        with patch(
+            "spotivore.spotify.api.views.get_spotify_oauth_service",
+            return_value=service,
+        ):
             response = api_client.get(
-                reverse("spotify_api:playlist-tracks", kwargs={"spotify_id": spotify_id}),
+                reverse(
+                    "spotify_api:playlist-tracks", kwargs={"spotify_id": spotify_id}
+                ),
             )
 
         assert response.status_code == 200

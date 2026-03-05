@@ -32,6 +32,7 @@ def spotify_settings(settings):
     settings.SPOTIFY_REDIRECT_URI = ""
     settings.SPOTIFY_TOKEN_REFRESH_LEEWAY_SECONDS = 60
 
+
 @pytest.mark.django_db
 class TestSpotifyOAuthService:
     def test_build_redirect_uri_uses_callback_route(self):

@@ -37,7 +37,9 @@ if settings.DEBUG:
 urlpatterns += [
     # API base url
     path("api/", include("config.api_router")),
-    path("api/spotify/", include("spotivore.spotify.api.urls", namespace="spotify_api")),
+    path(
+        "api/spotify/", include("spotivore.spotify.api.urls", namespace="spotify_api")
+    ),
     # DRF auth token
     path("api/auth-token/", obtain_auth_token),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),

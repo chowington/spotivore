@@ -43,7 +43,9 @@ class SpotifyAuthURLView(APIView):
                 redirect_uri=redirect_uri,
             )
         except ImproperlyConfigured as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response(
+                {"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
 
         request.session[SPOTIFY_OAUTH_STATE_SESSION_KEY] = state
         next_url = request.query_params.get("next", "")
@@ -85,7 +87,9 @@ class SpotifyPlaylistListView(APIView):
         try:
             playlists = service.get_current_user_playlists(connection)
         except ImproperlyConfigured as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response(
+                {"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
         except SpotifyAPIError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
 
@@ -98,17 +102,20 @@ class SpotifyPlaylistTracksView(APIView):
 
     def get(self, request, spotify_id: str):
         if len(spotify_id) != 22 or not spotify_id.isalnum():
-            raise ValidationError({"spotify_id": ["Spotify IDs must be 22 alphanumeric characters."]})
+            raise ValidationError(
+                {"spotify_id": ["Spotify IDs must be 22 alphanumeric characters."]}
+            )
 
         connection = get_connection_for_user(request.user)
         service = get_spotify_oauth_service()
         try:
             tracks = service.get_playlist_tracks(connection, spotify_id)
         except ImproperlyConfigured as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response(
+                {"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
         except SpotifyAPIError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
 
         serializer = SpotifyPlaylistTrackSerializer(tracks, many=True)
         return Response(serializer.data)
-

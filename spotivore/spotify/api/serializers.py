@@ -48,4 +48,3 @@ class SpotifyPlaylistTrackSerializer(serializers.Serializer):
     artists = serializers.ListField(child=serializers.CharField())
     album = serializers.CharField(allow_blank=True)
     uri = serializers.CharField(allow_blank=True)
-

@@ -20,4 +20,3 @@ class SpotifyConnectionFactory(factory.django.DjangoModelFactory):
     token_type = "Bearer"
     scope = "playlist-read-private user-read-email"
     expires_at = factory.LazyFunction(lambda: timezone.now() + timedelta(hours=1))
-

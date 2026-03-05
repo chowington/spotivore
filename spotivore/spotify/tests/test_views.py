@@ -32,7 +32,9 @@ class CallbackSpotifyServiceStub:
             "email": "spotify@example.com",
         }
 
-    def build_connection_defaults(self, token_payload: dict, profile_payload: dict) -> dict:
+    def build_connection_defaults(
+        self, token_payload: dict, profile_payload: dict
+    ) -> dict:
         return {
             "spotify_user_id": profile_payload["id"],
             "display_name": profile_payload["display_name"],
@@ -59,7 +61,9 @@ class TestSpotifyCallbackView:
         session.save()
 
         service = CallbackSpotifyServiceStub()
-        with patch("spotivore.spotify.views.get_spotify_oauth_service", return_value=service):
+        with patch(
+            "spotivore.spotify.views.get_spotify_oauth_service", return_value=service
+        ):
             response = client.get(
                 reverse("spotify:callback"),
                 {"state": "expected-state", "code": "spotify-code"},

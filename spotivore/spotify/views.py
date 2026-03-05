@@ -56,7 +56,9 @@ class SpotifyCallbackView(View):
         if error:
             request.session.pop(SPOTIFY_OAUTH_STATE_SESSION_KEY, None)
             request.session.pop(SPOTIFY_OAUTH_NEXT_SESSION_KEY, None)
-            return HttpResponseRedirect(with_query_params(failure_url, spotify_error=error))
+            return HttpResponseRedirect(
+                with_query_params(failure_url, spotify_error=error)
+            )
 
         expected_state = request.session.pop(SPOTIFY_OAUTH_STATE_SESSION_KEY, None)
         state = request.GET.get("state")
@@ -75,14 +77,18 @@ class SpotifyCallbackView(View):
                 code=code,
                 redirect_uri=redirect_uri,
             )
-            profile_payload = service.fetch_current_user_profile(token_payload["access_token"])
+            profile_payload = service.fetch_current_user_profile(
+                token_payload["access_token"]
+            )
             if (
                 SpotifyConnection.objects.filter(spotify_user_id=profile_payload["id"])
                 .exclude(user=request.user)
                 .exists()
             ):
                 return HttpResponseRedirect(
-                    with_query_params(failure_url, spotify_error="account_already_connected"),
+                    with_query_params(
+                        failure_url, spotify_error="account_already_connected"
+                    ),
                 )
             defaults = service.build_connection_defaults(token_payload, profile_payload)
             existing_refresh_token = (

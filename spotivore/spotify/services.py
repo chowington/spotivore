@@ -86,7 +86,9 @@ class SpotifyOAuthService:
             },
         )
 
-    def build_connection_defaults(self, token_payload: dict, profile_payload: dict) -> dict:
+    def build_connection_defaults(
+        self, token_payload: dict, profile_payload: dict
+    ) -> dict:
         return {
             "spotify_user_id": profile_payload["id"],
             "display_name": profile_payload.get("display_name", "") or "",
@@ -103,7 +105,9 @@ class SpotifyOAuthService:
         if not connection.is_expired(self.refresh_leeway_seconds):
             return connection.access_token
 
-        token_payload = self.refresh_access_token(refresh_token=connection.refresh_token)
+        token_payload = self.refresh_access_token(
+            refresh_token=connection.refresh_token
+        )
         connection.access_token = token_payload["access_token"]
         connection.token_type = token_payload.get("token_type", connection.token_type)
         connection.scope = token_payload.get("scope", connection.scope)
@@ -147,7 +151,9 @@ class SpotifyOAuthService:
             if item.get("id")
         ]
 
-    def get_playlist_tracks(self, connection: SpotifyConnection, spotify_id: str) -> list[dict]:
+    def get_playlist_tracks(
+        self, connection: SpotifyConnection, spotify_id: str
+    ) -> list[dict]:
         access_token = self.ensure_valid_access_token(connection)
         items = self._paginate(
             f"{SPOTIFY_API_BASE_URL}/playlists/{spotify_id}/tracks?limit=100",
@@ -185,7 +191,9 @@ class SpotifyOAuthService:
 
     def _post_form(self, url: str, payload: dict[str, str]) -> dict:
         encoded_payload = urlencode(payload).encode("utf-8")
-        auth_token = b64encode(f"{self.client_id}:{self.client_secret}".encode("utf-8")).decode("ascii")
+        auth_token = b64encode(
+            f"{self.client_id}:{self.client_secret}".encode("utf-8")
+        ).decode("ascii")
         request = Request(
             url,
             data=encoded_payload,
@@ -222,4 +230,3 @@ class SpotifyOAuthService:
         if not body:
             return {}
         return json.loads(body)
-
