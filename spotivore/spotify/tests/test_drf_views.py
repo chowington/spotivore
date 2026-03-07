@@ -4,6 +4,7 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+from spotivore.spotify.constants import SPOTIFY_OAUTH_NEXT_SESSION_KEY, SPOTIFY_OAUTH_STATE_SESSION_KEY
 from spotivore.spotify.models import SpotifyConnection
 from spotivore.spotify.tests.factories import SpotifyConnectionFactory
 from spotivore.users.models import User
@@ -70,8 +71,8 @@ class TestSpotifyAPIViews:
             "https://accounts.spotify.com/authorize?"
         )
         session = api_client.session
-        assert session["spotify_oauth_state"]
-        assert session["spotify_oauth_next"] == "/client/spotify"
+        assert session[SPOTIFY_OAUTH_STATE_SESSION_KEY]
+        assert session[SPOTIFY_OAUTH_NEXT_SESSION_KEY] == "/client/spotify"
 
     def test_connection_returns_connected_state(
         self,

@@ -128,7 +128,11 @@ class PlaylistViewSet(
 
         if validated_data["sublist_spotify_id"] == playlist.spotify_id:
             return Response(
-                {"sublist_spotify_id": ["A playlist cannot reference itself as a sublist."]},
+                {
+                    "sublist_spotify_id": [
+                        "A playlist cannot reference itself as a sublist."
+                    ]
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

@@ -62,4 +62,6 @@ class PlaylistSyncSerializer(serializers.Serializer):
 class PlaylistSublistSerializer(serializers.Serializer):
     position = serializers.IntegerField(min_value=0)
     sublist_spotify_id = serializers.RegexField(r"^[A-Za-z0-9]{22}$")
-    sublist_name = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    sublist_name = serializers.CharField(
+        required=False, allow_blank=True, max_length=255
+    )

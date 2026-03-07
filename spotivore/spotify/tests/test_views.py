@@ -5,6 +5,7 @@ from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
+from spotivore.spotify.constants import SPOTIFY_OAUTH_NEXT_SESSION_KEY, SPOTIFY_OAUTH_STATE_SESSION_KEY
 from spotivore.spotify.models import SpotifyConnection
 from spotivore.users.models import User
 
@@ -56,8 +57,8 @@ class TestSpotifyCallbackView:
     def test_callback_saves_connection_and_redirects(self, user: User, client: Client):
         client.force_login(user)
         session = client.session
-        session["spotify_oauth_state"] = "expected-state"
-        session["spotify_oauth_next"] = "/client/spotify"
+        session[SPOTIFY_OAUTH_STATE_SESSION_KEY] = "expected-state"
+        session[SPOTIFY_OAUTH_NEXT_SESSION_KEY] = "/client/spotify"
         session.save()
 
         service = CallbackSpotifyServiceStub()
