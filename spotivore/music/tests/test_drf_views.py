@@ -15,7 +15,9 @@ class TestPlaylistViewSet:
     def api_rf(self) -> APIRequestFactory:
         return APIRequestFactory()
 
-    def test_get_queryset_is_scoped_to_user(self, user: User, api_rf: APIRequestFactory):
+    def test_get_queryset_is_scoped_to_user(
+        self, user: User, api_rf: APIRequestFactory
+    ):
         owned = PlaylistFactory(owner=user)
         PlaylistFactory()
 
@@ -27,7 +29,9 @@ class TestPlaylistViewSet:
         assert list(view.get_queryset()) == [owned]
 
     @pytest.mark.django_db
-    def test_sync_creates_playlist_and_entries(self, user: User, api_rf: APIRequestFactory):
+    def test_sync_creates_playlist_and_entries(
+        self, user: User, api_rf: APIRequestFactory
+    ):
         view = PlaylistViewSet.as_view({"post": "sync"})
         request = api_rf.post(
             "/api/playlists/sync/",
@@ -49,7 +53,9 @@ class TestPlaylistViewSet:
         assert response.status_code == 200
         assert playlist.name == "Road Trip"
         assert list(playlist.entries.values_list("position", flat=True)) == [0, 1]
-        assert Track.objects.filter(spotify_id="abcdefghijklmnopqrstuv", name="First").exists()
+        assert Track.objects.filter(
+            spotify_id="abcdefghijklmnopqrstuv", name="First"
+        ).exists()
 
     @pytest.mark.django_db
     def test_sync_replaces_changed_track_and_clears_sublist(
@@ -70,7 +76,9 @@ class TestPlaylistViewSet:
             "/api/playlists/sync/",
             {
                 "spotify_id": playlist.spotify_id,
-                "tracks": [{"spotify_id": "abcdefghijklmnopqrstuv", "name": "Replacement"}],
+                "tracks": [
+                    {"spotify_id": "abcdefghijklmnopqrstuv", "name": "Replacement"}
+                ],
             },
             format="json",
         )
@@ -84,7 +92,9 @@ class TestPlaylistViewSet:
         assert entry.sublist is None
 
     @pytest.mark.django_db
-    def test_assign_sublists_to_playlist_entry(self, user: User, api_rf: APIRequestFactory):
+    def test_assign_sublists_to_playlist_entry(
+        self, user: User, api_rf: APIRequestFactory
+    ):
         playlist = PlaylistFactory(owner=user, spotify_id="1234567890123456789012")
         TrackInPlaylistFactory(playlist=playlist, position=0)
 
@@ -110,7 +120,9 @@ class TestPlaylistViewSet:
         assert entry.sublist.name == "Warmup"
 
     @pytest.mark.django_db
-    def test_list_sublists_returns_only_embedded_entries(self, user: User, api_rf: APIRequestFactory):
+    def test_list_sublists_returns_only_embedded_entries(
+        self, user: User, api_rf: APIRequestFactory
+    ):
         playlist = PlaylistFactory(owner=user, spotify_id="1234567890123456789012")
         sublist = PlaylistFactory(owner=user, spotify_id="abcdefghijklmnopqrstuv")
         TrackInPlaylistFactory(playlist=playlist, position=0, sublist=sublist)
