@@ -7,8 +7,6 @@ const store = useSpotivoreStore()
 
 // Fetch the user's playlists from Spotify (via backend) and cross-reference
 // with Spotivore's local store to mark playlists that have local data.
-// These functions are similar to the functions in SublistManager and should
-// be refactored eventually.
 async function refresh() {
   store.playlists = []
 

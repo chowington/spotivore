@@ -12,7 +12,7 @@ const selected = computed(() => store.selectedPlaylist?.spotify_id === props.pla
 <template>
   <div
     class="playlist-item"
-    :class="{ active: selected, has_changes: playlist.has_local_data }"
+    :class="{ active: selected, has_local_data: playlist.has_local_data }"
     :title="playlist.name"
     @click="store.selectPlaylist(playlist)"
   >

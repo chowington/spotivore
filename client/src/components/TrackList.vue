@@ -19,6 +19,7 @@ async function refresh() {
   if (playlist.value.has_local_data) {
     // Fetch local track entries from Spotivore
     const res = await fetch(`/api/playlists/${playlist.value.spotify_id}/`)
+    if (!res.ok) { console.error(`Failed to fetch local playlist: ${res.status} ${res.statusText}`); return }
     const data = await res.json()
 
     // Spotivore returns position + track metadata; map to the Track shape.
@@ -36,6 +37,7 @@ async function refresh() {
   } else {
     // Fetch tracks from Spotify via the backend
     const res = await fetch(`/api/spotify/playlists/${playlist.value.spotify_id}/tracks/`)
+    if (!res.ok) { console.error(`Failed to fetch Spotify tracks: ${res.status} ${res.statusText}`); return }
     tracks.value = await res.json()
   }
 }
@@ -47,10 +49,11 @@ async function syncWithSpotivore() {
 
   // First fetch fresh tracks from Spotify
   const res = await fetch(`/api/spotify/playlists/${playlist.value.spotify_id}/tracks/`)
+  if (!res.ok) { console.error(`Failed to fetch Spotify tracks for sync: ${res.status} ${res.statusText}`); return }
   const spotifyTracks: Track[] = await res.json()
 
   // Then sync to Spotivore
-  await fetch('/api/playlists/sync/', {
+  const syncRes = await fetch('/api/playlists/sync/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -62,6 +65,8 @@ async function syncWithSpotivore() {
       tracks: spotifyTracks.map((t) => ({ spotify_id: t.spotify_id, name: t.name })),
     }),
   })
+
+  if (!syncRes.ok) return
 
   store.markPlaylistAsLocal(playlist.value.spotify_id)
   tracks.value = spotifyTracks
