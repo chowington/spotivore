@@ -145,7 +145,7 @@ class SpotifyOAuthService:
                 "description": item.get("description", "") or "",
                 "owner_name": item.get("owner", {}).get("display_name", "") or "",
                 "is_public": item.get("public"),
-                "track_count": item.get("tracks", {}).get("total", 0),
+                "track_count": item.get("items", {}).get("total", 0),
             }
             for item in items
             if item.get("id")
@@ -156,7 +156,7 @@ class SpotifyOAuthService:
     ) -> list[dict]:
         access_token = self.ensure_valid_access_token(connection)
         items = self._paginate(
-            f"{SPOTIFY_API_BASE_URL}/playlists/{spotify_id}/tracks?limit=100",
+            f"{SPOTIFY_API_BASE_URL}/playlists/{spotify_id}/items?limit=100",
             access_token,
         )
         tracks: list[dict] = []

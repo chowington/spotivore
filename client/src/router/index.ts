@@ -10,14 +10,34 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue'),
+    },
+    {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
   ],
+})
+
+router.beforeEach(async (to) => {
+  const res = await fetch('/api/spotify/connection/')
+
+  if (res.status === 403) {
+    window.location.href = '/accounts/login/?next=/'
+    return false
+  }
+
+  const data = await res.json()
+
+  if (!data.connected) {
+    if (to.name !== 'login') return { name: 'login' }
+    return
+  }
+
+  if (to.name === 'login') return { name: 'home' }
 })
 
 export default router

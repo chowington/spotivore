@@ -13,6 +13,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': process.env.BACKEND_URL ?? 'http://localhost:8000',
+      '/accounts': process.env.BACKEND_URL ?? 'http://localhost:8000',
+      '/spotify': process.env.BACKEND_URL ?? 'http://localhost:8000',
     },
   },
   resolve: {
