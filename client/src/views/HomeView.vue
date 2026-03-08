@@ -7,13 +7,12 @@ import PlayerComponent from '@/components/PlayerComponent.vue'
 <template>
   <div id="spotivore-app">
     <div id="main-row">
-      <div id="sidebar-left" class="sidebar">
+      <div id="sidebar-left">
         <PlaylistList />
       </div>
       <div id="main-content">
         <TrackList />
       </div>
-      <div id="sidebar-right" class="sidebar"></div>
     </div>
     <div id="player-row">
       <PlayerComponent />
@@ -26,6 +25,8 @@ import PlayerComponent from '@/components/PlayerComponent.vue'
   display: flex;
   flex-direction: column;
   height: 100vh;
+  background: var(--sp-bg);
+  color: var(--sp-text);
 }
 
 #main-row {
@@ -35,27 +36,22 @@ import PlayerComponent from '@/components/PlayerComponent.vue'
 }
 
 #sidebar-left {
-  width: 250px;
+  width: 260px;
+  background: #000;
   overflow-y: auto;
-  border-right: 1px solid #333;
-  flex-shrink: 0;
-}
-
-#sidebar-right {
-  width: 200px;
-  border-left: 1px solid #333;
+  border-right: 1px solid var(--sp-border);
   flex-shrink: 0;
 }
 
 #main-content {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
 }
 
 #player-row {
-  height: 80px;
-  border-top: 1px solid #333;
+  height: 90px;
+  border-top: 1px solid var(--sp-border);
+  background: var(--sp-surface);
   flex-shrink: 0;
 }
 </style>

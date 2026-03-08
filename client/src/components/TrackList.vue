@@ -84,17 +84,105 @@ watch(playlist, () => {
 </script>
 
 <template>
-  <div>
+  <div id="track-list">
     <div v-if="playlist" id="track-list-header">
-      <h3>{{ playlist.name }} ({{ tracks.length }})</h3>
-      <span id="playlist-tools">
+      <div id="track-list-title">
+        <h2>{{ playlist.name }}</h2>
+        <span class="track-count">{{ tracks.length }} tracks</span>
+      </div>
+      <div id="playlist-tools">
         <button id="sync-playlist-btn" @click="syncWithSpotivore" title="Sync playlist to Spotivore">
           Sync to Spotivore
         </button>
         <button id="refresh-btn" @click="refresh" title="Refresh tracklist">Refresh</button>
-      </span>
+      </div>
     </div>
     <div v-else class="no-playlist-message">Select a playlist</div>
-    <TrackItem v-for="track in tracks" :key="track.position" :track="track" />
+    <div id="track-list-body">
+      <TrackItem v-for="track in tracks" :key="track.position" :track="track" />
+    </div>
   </div>
 </template>
+
+<style scoped>
+#track-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#track-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--sp-border);
+  flex-shrink: 0;
+}
+
+#track-list-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sp-text);
+}
+
+.track-count {
+  font-size: 13px;
+  color: var(--sp-text-muted);
+}
+
+#playlist-tools {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  background: transparent;
+  border: 1px solid #535353;
+  color: var(--sp-text);
+  padding: 6px 18px;
+  border-radius: 500px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+}
+
+button:hover {
+  border-color: var(--sp-text);
+}
+
+#sync-playlist-btn {
+  background: var(--sp-green);
+  border-color: var(--sp-green);
+  color: #000;
+  font-weight: 700;
+}
+
+#sync-playlist-btn:hover {
+  background: var(--sp-green-light);
+  border-color: var(--sp-green-light);
+}
+
+#track-list-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.no-playlist-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  color: var(--sp-text-muted);
+  font-size: 15px;
+}
+</style>
