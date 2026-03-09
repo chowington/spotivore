@@ -180,6 +180,31 @@ class SpotifyOAuthService:
             )
         return tracks
 
+    def play(
+        self,
+        connection: SpotifyConnection,
+        *,
+        device_id: str | None = None,
+        uris: list[str] | None = None,
+        context_uri: str | None = None,
+        offset: dict | None = None,
+        position_ms: int | None = None,
+    ) -> None:
+        access_token = self.ensure_valid_access_token(connection)
+        url = f"{SPOTIFY_API_BASE_URL}/me/player/play"
+        if device_id:
+            url += f"?device_id={device_id}"
+        body: dict = {}
+        if uris is not None:
+            body["uris"] = uris
+        elif context_uri is not None:
+            body["context_uri"] = context_uri
+            if offset is not None:
+                body["offset"] = offset
+        if position_ms is not None:
+            body["position_ms"] = position_ms
+        self._put_json(url, body, access_token)
+
     def _paginate(self, url: str, access_token: str) -> list[dict]:
         items: list[dict] = []
         next_url = url
@@ -203,6 +228,20 @@ class SpotifyOAuthService:
                 "Accept": "application/json",
             },
             method="POST",
+        )
+        return self._send_json(request)
+
+    def _put_json(self, url: str, body: dict, access_token: str) -> dict:
+        data = json.dumps(body).encode("utf-8")
+        request = Request(
+            url,
+            data=data,
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            method="PUT",
         )
         return self._send_json(request)
 

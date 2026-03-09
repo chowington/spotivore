@@ -73,5 +73,9 @@ if env.bool("USE_DOCKER", default=False):
 # https://django-extensions.readthedocs.io/en/latest/installation_instructions.html#configuration
 INSTALLED_APPS += ["django_extensions"]
 
+# CSRF
+# ------------------------------------------------------------------------------
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
 # Your stuff...
 # ------------------------------------------------------------------------------
