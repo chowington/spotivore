@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { getAuthUrl } from '@/api/backend'
+
 async function connectSpotify() {
-  const res = await fetch('/api/spotify/auth-url/')
-  const data = await res.json()
-  window.location.href = data.authorize_url
+  window.location.href = await getAuthUrl()
 }
 </script>
 

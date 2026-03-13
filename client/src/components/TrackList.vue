@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useSpotivoreStore, type Track } from '@/stores/spotivore'
+import { getTracks } from '@/api/backend'
 import TrackItem from './TrackItem.vue'
 
 const store = useSpotivoreStore()
@@ -12,9 +13,8 @@ const playlist = computed(() => store.selectedPlaylist)
 async function refresh() {
   if (!playlist.value) return
   tracks.value = []
-  const res = await fetch(`/api/playlists/${playlist.value.spotify_id}/tracks/`)
-  if (!res.ok) { console.error(`Failed to fetch tracks: ${res.status} ${res.statusText}`); return }
-  tracks.value = await res.json()
+  const result = await getTracks(playlist.value.spotify_id)
+  if (result) tracks.value = result
 }
 
 // When the current playlist changes, refresh the tracklist

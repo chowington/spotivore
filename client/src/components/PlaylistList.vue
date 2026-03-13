@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useSpotivoreStore } from '@/stores/spotivore'
+import { getPlaylists } from '@/api/backend'
 import PlaylistItem from './PlaylistItem.vue'
 
 const store = useSpotivoreStore()
 
 async function refresh() {
   store.playlists = []
-  const res = await fetch('/api/spotify/playlists/')
-  if (!res.ok) { console.error(`Failed to fetch playlists: ${res.status} ${res.statusText}`); return }
-  store.playlists = await res.json()
+  const playlists = await getPlaylists()
+  if (playlists) store.playlists = playlists
 }
 
 onMounted(() => {
