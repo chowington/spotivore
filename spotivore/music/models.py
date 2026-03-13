@@ -15,6 +15,9 @@ class Track(models.Model):
         validators=[spotify_id_validator],
     )
     name = models.CharField(max_length=255, blank=True)
+    artists = models.JSONField(default=list)
+    album = models.CharField(max_length=255, blank=True)
+    uri = models.CharField(max_length=100, blank=True)
 
     class Meta:
         ordering = ["spotify_id"]

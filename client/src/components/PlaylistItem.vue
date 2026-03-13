@@ -16,11 +16,6 @@ const selected = computed(() => store.selectedPlaylist?.spotify_id === props.pla
     :title="playlist.name"
     @click="store.selectPlaylist(playlist)"
   >
-    <span
-      v-if="playlist.has_local_data"
-      class="dot-indicator"
-      title="Synced to Spotivore"
-    ></span>
     <span class="playlist-name">{{ playlist.name }}</span>
   </div>
 </template>
@@ -55,11 +50,4 @@ const selected = computed(() => store.selectedPlaylist?.spotify_id === props.pla
   white-space: nowrap;
 }
 
-.dot-indicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--sp-green);
-  flex-shrink: 0;
-}
 </style>
