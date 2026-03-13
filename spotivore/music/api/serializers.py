@@ -8,7 +8,7 @@ from spotivore.music.models import TrackInPlaylist
 class TrackSerializer(serializers.ModelSerializer[Track]):
     class Meta:
         model = Track
-        fields = ["spotify_id", "name"]
+        fields = ["spotify_id", "name", "artists", "album", "uri"]
 
 
 class PlaylistTrackEntrySerializer(serializers.ModelSerializer[TrackInPlaylist]):
@@ -51,6 +51,9 @@ class PlaylistDetailSerializer(PlaylistSerializer):
 class SyncTrackSerializer(serializers.Serializer):
     spotify_id = serializers.RegexField(r"^[A-Za-z0-9]{22}$")
     name = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    artists = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    album = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    uri = serializers.CharField(required=False, allow_blank=True, max_length=100)
 
 
 class PlaylistSyncSerializer(serializers.Serializer):

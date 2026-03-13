@@ -1,3 +1,4 @@
+from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import status
@@ -9,6 +10,9 @@ from rest_framework.viewsets import GenericViewSet
 from spotivore.music.models import Playlist
 from spotivore.music.models import Track
 from spotivore.music.models import TrackInPlaylist
+from spotivore.spotify.models import SpotifyConnection
+from spotivore.spotify.services import SpotifyAPIError
+from spotivore.spotify.services import SpotifyOAuthService
 
 from .serializers import PlaylistDetailSerializer
 from .serializers import PlaylistSerializer
@@ -74,13 +78,26 @@ class PlaylistViewSet(
                 seen_positions.add(position)
                 track, _ = Track.objects.get_or_create(
                     spotify_id=track_data["spotify_id"],
-                    defaults={"name": track_data.get("name", "")},
+                    defaults={
+                        "name": track_data.get("name", ""),
+                        "artists": track_data.get("artists", []),
+                        "album": track_data.get("album", ""),
+                        "uri": track_data.get("uri", ""),
+                    },
                 )
 
-                track_name = track_data.get("name", "")
-                if track_name and track.name != track_name:
-                    track.name = track_name
-                    track.save(update_fields=["name"])
+                track_update_fields: list[str] = []
+                for field in ("name", "album", "uri"):
+                    val = track_data.get(field, "")
+                    if val and getattr(track, field) != val:
+                        setattr(track, field, val)
+                        track_update_fields.append(field)
+                artists = track_data.get("artists", [])
+                if artists and track.artists != artists:
+                    track.artists = artists
+                    track_update_fields.append("artists")
+                if track_update_fields:
+                    track.save(update_fields=track_update_fields)
 
                 entry = existing_entries.get(position)
                 if entry is None:
@@ -110,6 +127,41 @@ class PlaylistViewSet(
             PlaylistDetailSerializer(playlist, context={"request": request}).data,
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["get"])
+    def tracks(self, request, spotify_id=None):
+        playlist = self.get_queryset().filter(spotify_id=spotify_id).first()
+        if playlist is not None:
+            entries = playlist.entries.select_related("track").order_by("position")
+            return Response([
+                {
+                    "position": e.position,
+                    "spotify_id": e.track.spotify_id,
+                    "name": e.track.name,
+                    "artists": e.track.artists,
+                    "album": e.track.album,
+                    "uri": e.track.uri,
+                }
+                for e in entries
+            ])
+
+        try:
+            connection = request.user.spotify_connection
+        except SpotifyConnection.DoesNotExist:
+            return Response(
+                {"detail": "Spotify account not connected."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        service = SpotifyOAuthService.from_settings()
+        try:
+            tracks_data = service.get_playlist_tracks(connection, spotify_id)
+        except ImproperlyConfigured as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except SpotifyAPIError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+
+        return Response(tracks_data)
 
     @action(detail=True, methods=["get", "post"])
     def sublists(self, request, spotify_id=None):
