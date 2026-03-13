@@ -9,11 +9,15 @@ const store = useSpotivoreStore()
 const loading = ref(false)
 
 async function refresh() {
+  if (loading.value) return
   store.playlists = []
   loading.value = true
-  const playlists = await getPlaylists()
-  loading.value = false
-  if (playlists) store.playlists = playlists
+  try {
+    const playlists = await getPlaylists()
+    if (playlists) store.playlists = playlists
+  } finally {
+    loading.value = false
+  }
 }
 
 onMounted(() => {
