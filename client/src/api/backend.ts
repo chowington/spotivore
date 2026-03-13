@@ -17,7 +17,24 @@ export async function getConnection(): Promise<ConnectionData | null> {
 
 export async function getAuthUrl(): Promise<string> {
   const res = await fetch('/api/spotify/auth-url/')
+
+  if (res.status === 403) {
+    // Unauthenticated session: redirect to login, similar to getConnection()
+    window.location.href = '/accounts/login/?next=/'
+    throw new Error('Unauthenticated: redirected to login')
+  }
+
+  if (!res.ok) {
+    if (res.status >= 500) {
+      throw new Error(`Failed to get auth URL: server error ${res.status} ${res.statusText}`)
+    }
+    throw new Error(`Failed to get auth URL: ${res.status} ${res.statusText}`)
+  }
+
   const data = await res.json()
+  if (!data || typeof data.authorize_url !== 'string') {
+    throw new Error('Failed to get auth URL: missing authorize_url in response')
+  }
   return data.authorize_url as string
 }
 
