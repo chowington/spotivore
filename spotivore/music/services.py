@@ -43,55 +43,81 @@ def sync_playlist(
         playlist.name = name
         playlist.save(update_fields=["name"])
 
-    existing_entries = {
+    # Resolve tracks — fetch existing in one query, bulk-create new ones.
+    input_spotify_ids = [t["spotify_id"] for t in tracks]
+    track_map: dict[str, Track] = {
+        t.spotify_id: t
+        for t in Track.objects.filter(spotify_id__in=input_spotify_ids)
+    }
+
+    tracks_to_create: list[Track] = []
+    tracks_to_update: list[Track] = []
+    track_update_fields: set[str] = set()
+
+    for track_data in tracks:
+        sid = track_data["spotify_id"]
+        existing = track_map.get(sid)
+        if existing is None:
+            tracks_to_create.append(Track(
+                spotify_id=sid,
+                name=track_data.get("name", ""),
+                artists=track_data.get("artists", []),
+                album=track_data.get("album", ""),
+                uri=track_data.get("uri", ""),
+            ))
+        else:
+            changed: list[str] = []
+            for field in ("name", "album", "uri"):
+                val = track_data.get(field, "")
+                if val and getattr(existing, field) != val:
+                    setattr(existing, field, val)
+                    changed.append(field)
+            artists = track_data.get("artists", [])
+            if artists and existing.artists != artists:
+                existing.artists = artists
+                changed.append("artists")
+            if changed:
+                tracks_to_update.append(existing)
+                track_update_fields.update(changed)
+
+    if tracks_to_create:
+        for t in Track.objects.bulk_create(tracks_to_create):
+            track_map[t.spotify_id] = t
+    if tracks_to_update:
+        Track.objects.bulk_update(tracks_to_update, list(track_update_fields))
+
+    # Sync TrackInPlaylist entries.
+    existing_entries: dict[int, TrackInPlaylist] = {
         entry.position: entry
         for entry in playlist.entries.select_related("track")
     }
+
+    entries_to_create: list[TrackInPlaylist] = []
+    entries_to_update: list[TrackInPlaylist] = []
     seen_positions: set[int] = set()
 
     with transaction.atomic():
         for track_data in tracks:
             position = track_data["position"]
             seen_positions.add(position)
-
-            track, _ = Track.objects.get_or_create(
-                spotify_id=track_data["spotify_id"],
-                defaults={
-                    "name": track_data.get("name", ""),
-                    "artists": track_data.get("artists", []),
-                    "album": track_data.get("album", ""),
-                    "uri": track_data.get("uri", ""),
-                },
-            )
-
-            track_update_fields: list[str] = []
-            for field in ("name", "album", "uri"):
-                val = track_data.get(field, "")
-                if val and getattr(track, field) != val:
-                    setattr(track, field, val)
-                    track_update_fields.append(field)
-            artists = track_data.get("artists", [])
-            if artists and track.artists != artists:
-                track.artists = artists
-                track_update_fields.append("artists")
-            if track_update_fields:
-                track.save(update_fields=track_update_fields)
-
+            track = track_map[track_data["spotify_id"]]
             entry = existing_entries.get(position)
+
             if entry is None:
-                TrackInPlaylist.objects.create(
+                entries_to_create.append(TrackInPlaylist(
                     playlist=playlist,
                     track=track,
                     position=position,
-                )
-            else:
-                entry_update_fields: list[str] = []
-                if entry.track_id != track.id:
-                    entry.track = track
-                    entry.sublist = None
-                    entry_update_fields.extend(["track", "sublist"])
-                if entry_update_fields:
-                    entry.save(update_fields=entry_update_fields)
+                ))
+            elif entry.track_id != track.id:
+                entry.track = track
+                entry.sublist = None
+                entries_to_update.append(entry)
+
+        if entries_to_create:
+            TrackInPlaylist.objects.bulk_create(entries_to_create)
+        if entries_to_update:
+            TrackInPlaylist.objects.bulk_update(entries_to_update, ["track", "sublist"])
 
         playlist.entries.exclude(position__in=seen_positions).delete()
 
