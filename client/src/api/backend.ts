@@ -58,7 +58,13 @@ export async function getTracks(spotifyId: string): Promise<Track[] | null> {
 
 export async function getToken(): Promise<string> {
   const res = await fetch('/api/spotify/token/')
+  if (!res.ok) {
+    throw new Error(`Failed to fetch Spotify token: ${res.status} ${res.statusText}`)
+  }
   const data = await res.json()
+  if (!data || typeof data.access_token !== 'string') {
+    throw new Error('Invalid token response from backend: missing access_token')
+  }
   return data.access_token as string
 }
 
