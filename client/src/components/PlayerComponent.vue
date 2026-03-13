@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useSpotivoreStore } from '@/stores/spotivore'
-import { togglePlay, previousTrack, nextTrack, seek } from '@/composables/useSpotifyPlayer'
+import { togglePlay, previousTrack, nextTrack, seek, toggleShuffle } from '@/composables/useSpotifyPlayer'
 
 const store = useSpotivoreStore()
 
@@ -19,6 +19,7 @@ onUnmounted(() => {
 
 const paused = computed(() => store.paused)
 const nowPlaying = computed(() => store.nowPlaying)
+const shuffleEnabled = computed(() => store.shuffleEnabled)
 
 // Interpolate position between SDK state-change events so the scrubber moves smoothly
 const displayPositionMs = computed(() => {
@@ -69,6 +70,12 @@ function onScrubberClick(e: MouseEvent) {
           {{ paused ? '▶' : '⏸' }}
         </button>
         <button class="control-btn" @click="nextTrack" title="Next">⏭</button>
+        <button
+          class="control-btn"
+          :class="{ 'shuffle-inactive': !shuffleEnabled }"
+          @click="toggleShuffle"
+          title="Toggle shuffle"
+        >🔀</button>
       </div>
       <div id="scrubber-row">
         <span class="time-label">{{ formatTime(displayPositionMs) }}</span>
@@ -161,6 +168,14 @@ function onScrubberClick(e: MouseEvent) {
 
 .control-btn:hover {
   color: var(--sp-text);
+}
+
+.control-btn.shuffle-inactive {
+  opacity: 0.4;
+}
+
+.control-btn.shuffle-inactive:hover {
+  opacity: 1;
 }
 
 #play-button {
