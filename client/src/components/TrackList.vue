@@ -7,13 +7,16 @@ import TrackItem from './TrackItem.vue'
 const store = useSpotivoreStore()
 
 const tracks = ref<Track[]>([])
+const loading = ref(false)
 
 const playlist = computed(() => store.selectedPlaylist)
 
 async function refresh() {
   if (!playlist.value) return
   tracks.value = []
+  loading.value = true
   const result = await getTracks(playlist.value.spotify_id)
+  loading.value = false
   if (result) tracks.value = result
 }
 
@@ -31,12 +34,13 @@ watch(playlist, () => {
         <span class="track-count">{{ tracks.length }} tracks</span>
       </div>
       <div id="playlist-tools">
-        <button id="refresh-btn" @click="refresh" title="Refresh tracklist">Refresh</button>
+        <button id="refresh-btn" @click="refresh" :disabled="loading" title="Refresh tracklist">Refresh</button>
       </div>
     </div>
     <div v-else class="no-playlist-message">Select a playlist</div>
     <div id="track-list-body">
-      <TrackItem v-for="track in tracks" :key="track.position" :track="track" />
+      <div v-if="loading" class="spinner" />
+      <TrackItem v-else v-for="track in tracks" :key="track.position" :track="track" />
     </div>
   </div>
 </template>
@@ -91,8 +95,13 @@ button {
   transition: border-color 0.1s, background 0.1s;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   border-color: var(--sp-text);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 #track-list-body {
@@ -109,5 +118,19 @@ button:hover {
   height: 100%;
   color: var(--sp-text-muted);
   font-size: 15px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--sp-text-muted);
+  border-top-color: var(--sp-text);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 40px auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>
