@@ -48,19 +48,6 @@ class PlaylistDetailSerializer(PlaylistSerializer):
         fields = [*PlaylistSerializer.Meta.fields, "entries"]
 
 
-class SyncTrackSerializer(serializers.Serializer):
-    spotify_id = serializers.RegexField(r"^[A-Za-z0-9]{22}$")
-    name = serializers.CharField(required=False, allow_blank=True, max_length=255)
-    artists = serializers.ListField(child=serializers.CharField(), required=False, default=list)
-    album = serializers.CharField(required=False, allow_blank=True, max_length=255)
-    uri = serializers.CharField(required=False, allow_blank=True, max_length=100)
-
-
-class PlaylistSyncSerializer(serializers.Serializer):
-    spotify_id = serializers.RegexField(r"^[A-Za-z0-9]{22}$")
-    name = serializers.CharField(required=False, allow_blank=True, max_length=255)
-    tracks = SyncTrackSerializer(many=True)
-
 
 class PlaylistSublistSerializer(serializers.Serializer):
     position = serializers.IntegerField(min_value=0)

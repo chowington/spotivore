@@ -2,7 +2,6 @@
 import { ref, computed, watch } from 'vue'
 import { useSpotivoreStore, type Track } from '@/stores/spotivore'
 import TrackItem from './TrackItem.vue'
-import { getCsrfToken } from '@/utils/csrf'
 
 const store = useSpotivoreStore()
 
@@ -10,8 +9,7 @@ const tracks = ref<Track[]>([])
 
 const playlist = computed(() => store.selectedPlaylist)
 
-// Pull the current playlist's tracks and refresh the tracklist.
-// The backend serves from local DB if synced, otherwise proxies to Spotify.
+// The backend serves from local DB if the playlist has Spotivore data, otherwise proxies to Spotify.
 async function refresh() {
   if (!playlist.value) return
   tracks.value = []
@@ -19,36 +17,6 @@ async function refresh() {
   if (!res.ok) { console.error(`Failed to fetch tracks: ${res.status} ${res.statusText}`); return }
   tracks.value = await res.json()
 }
-
-// Sync the current playlist into Spotivore's local store.
-async function syncWithSpotivore() {
-  if (!playlist.value) return
-
-  // Fetch current tracks (backend proxies to Spotify if not yet synced)
-  const res = await fetch(`/api/playlists/${playlist.value.spotify_id}/tracks/`)
-  if (!res.ok) { console.error(`Failed to fetch tracks for sync: ${res.status} ${res.statusText}`); return }
-  const currentTracks: Track[] = await res.json()
-
-  // Sync full rich track data to Spotivore DB
-  const syncRes = await fetch('/api/playlists/sync/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCsrfToken(),
-    },
-    body: JSON.stringify({
-      spotify_id: playlist.value.spotify_id,
-      name: playlist.value.name,
-      tracks: currentTracks,
-    }),
-  })
-
-  if (!syncRes.ok) return
-
-  store.markPlaylistAsLocal(playlist.value.spotify_id)
-  tracks.value = currentTracks
-}
-
 
 // When the current playlist changes, refresh the tracklist
 watch(playlist, () => {
@@ -64,9 +32,6 @@ watch(playlist, () => {
         <span class="track-count">{{ tracks.length }} tracks</span>
       </div>
       <div id="playlist-tools">
-        <button id="sync-playlist-btn" @click="syncWithSpotivore" title="Sync playlist to Spotivore">
-          Sync to Spotivore
-        </button>
         <button id="refresh-btn" @click="refresh" title="Refresh tracklist">Refresh</button>
       </div>
     </div>
@@ -129,18 +94,6 @@ button {
 
 button:hover {
   border-color: var(--sp-text);
-}
-
-#sync-playlist-btn {
-  background: var(--sp-green);
-  border-color: var(--sp-green);
-  color: #000;
-  font-weight: 700;
-}
-
-#sync-playlist-btn:hover {
-  background: var(--sp-green-light);
-  border-color: var(--sp-green-light);
 }
 
 #track-list-body {

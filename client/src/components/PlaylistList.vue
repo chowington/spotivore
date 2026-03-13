@@ -5,30 +5,11 @@ import PlaylistItem from './PlaylistItem.vue'
 
 const store = useSpotivoreStore()
 
-// Fetch the user's playlists from Spotify (via backend) and cross-reference
-// with Spotivore's local store to mark playlists that have local data.
 async function refresh() {
   store.playlists = []
-
-  const [spotifyRes, spotivoreRes] = await Promise.all([
-    fetch('/api/spotify/playlists/'),
-    fetch('/api/playlists/'),
-  ])
-
-  const spotifyData = await spotifyRes.json()
-  const spotivoreData = await spotivoreRes.json()
-
-  // Build a set of spotify_ids that have been synced into Spotivore
-  const localIds = new Set<string>(spotivoreData.map((p: { spotify_id: string }) => p.spotify_id))
-
-  store.playlists = spotifyData.map(
-    (p: { spotify_id: string; name: string; track_count: number }) => ({
-      spotify_id: p.spotify_id,
-      name: p.name,
-      track_count: p.track_count,
-      has_local_data: localIds.has(p.spotify_id),
-    }),
-  )
+  const res = await fetch('/api/spotify/playlists/')
+  if (!res.ok) { console.error(`Failed to fetch playlists: ${res.status} ${res.statusText}`); return }
+  store.playlists = await res.json()
 }
 
 onMounted(() => {

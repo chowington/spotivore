@@ -5,9 +5,6 @@ export interface Playlist {
   spotify_id: string
   name: string
   track_count: number
-  // Whether this playlist has been synced into Spotivore's local store.
-  // If true, tracks are fetched from Spotivore; otherwise from Spotify.
-  has_local_data: boolean
 }
 
 export interface Track {
@@ -49,17 +46,6 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
 
   function selectPlaylist(playlist: Playlist) {
     selectedPlaylist.value = playlist
-  }
-
-  // Mark a playlist as having local data in Spotivore (e.g. after a sync)
-  function markPlaylistAsLocal(spotify_id: string) {
-    const playlist = playlists.value.find((p) => p.spotify_id === spotify_id)
-    if (playlist) {
-      playlist.has_local_data = true
-    }
-    if (selectedPlaylist.value?.spotify_id === spotify_id) {
-      selectedPlaylist.value.has_local_data = true
-    }
   }
 
   function setCsrfToken(token: string) {
@@ -113,7 +99,6 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     positionMs,
     lastPositionTimestamp,
     selectPlaylist,
-    markPlaylistAsLocal,
     setCsrfToken,
     setDeviceId,
     setPlayerState,
