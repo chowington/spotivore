@@ -16,9 +16,14 @@ async function refresh() {
   if (!playlist.value) return
   tracks.value = []
   loading.value = true
-  const result = await getTracks(playlist.value.spotify_id)
-  loading.value = false
-  if (result) tracks.value = result
+  try {
+    const result = await getTracks(playlist.value.spotify_id)
+    if (result) tracks.value = result
+  } catch (error) {
+    console.error('Failed to refresh tracks', error)
+  } finally {
+    loading.value = false
+  }
 }
 
 // When the current playlist changes, refresh the tracklist
