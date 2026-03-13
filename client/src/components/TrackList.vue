@@ -9,7 +9,6 @@ const tracks = ref<Track[]>([])
 
 const playlist = computed(() => store.selectedPlaylist)
 
-// The backend serves from local DB if the playlist has Spotivore data, otherwise proxies to Spotify.
 async function refresh() {
   if (!playlist.value) return
   tracks.value = []
