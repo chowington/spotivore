@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useSpotivoreStore } from '@/stores/spotivore'
 import { getPlaylists } from '@/api/backend'
 import PlaylistItem from './PlaylistItem.vue'
+import Spinner from './Spinner.vue'
 
 const store = useSpotivoreStore()
 const loading = ref(false)
@@ -23,7 +24,7 @@ onMounted(() => {
 <template>
   <div id="playlist-list">
     <div class="header-caps" @click="refresh">Playlists</div>
-    <div v-if="loading" class="spinner" />
+    <Spinner v-if="loading" />
     <PlaylistItem
       v-else
       v-for="playlist in store.playlists"
@@ -54,17 +55,4 @@ onMounted(() => {
   color: var(--sp-text);
 }
 
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--sp-text-muted);
-  border-top-color: var(--sp-text);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  margin: 16px auto;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 </style>

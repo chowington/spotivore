@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useSpotivoreStore, type Track } from '@/stores/spotivore'
 import { getTracks } from '@/api/backend'
 import TrackItem from './TrackItem.vue'
+import Spinner from './Spinner.vue'
 
 const store = useSpotivoreStore()
 
@@ -39,7 +40,7 @@ watch(playlist, () => {
     </div>
     <div v-else class="no-playlist-message">Select a playlist</div>
     <div id="track-list-body">
-      <div v-if="loading" class="spinner" />
+      <Spinner v-if="loading" />
       <TrackItem v-else v-for="track in tracks" :key="track.position" :track="track" />
     </div>
   </div>
@@ -120,17 +121,4 @@ button:disabled {
   font-size: 15px;
 }
 
-.spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--sp-text-muted);
-  border-top-color: var(--sp-text);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  margin: 40px auto;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 </style>
