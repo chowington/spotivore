@@ -1,25 +1,85 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useSpotivoreStore } from '@/stores/spotivore'
+import { togglePlay, previousTrack, nextTrack, seek } from '@/composables/useSpotifyPlayer'
 
 const store = useSpotivoreStore()
 
+// Tick every 500ms so the scrubber animates smoothly during playback
+const now = ref(Date.now())
+let ticker: ReturnType<typeof setInterval> | null = null
+onMounted(() => {
+  ticker = setInterval(() => {
+    now.value = Date.now()
+  }, 500)
+})
+onUnmounted(() => {
+  if (ticker) clearInterval(ticker)
+})
+
 const paused = computed(() => store.paused)
+const nowPlaying = computed(() => store.nowPlaying)
+
+// Interpolate position between SDK state-change events so the scrubber moves smoothly
+const displayPositionMs = computed(() => {
+  if (!nowPlaying.value) return 0
+  if (paused.value) return store.positionMs
+  return Math.min(
+    store.positionMs + (now.value - store.lastPositionTimestamp),
+    nowPlaying.value.durationMs,
+  )
+})
+
+const progressPercent = computed(() => {
+  if (!nowPlaying.value || nowPlaying.value.durationMs === 0) return 0
+  return (displayPositionMs.value / nowPlaying.value.durationMs) * 100
+})
+
+function formatTime(ms: number): string {
+  const s = Math.floor(ms / 1000)
+  const m = Math.floor(s / 60)
+  return `${m}:${String(s % 60).padStart(2, '0')}`
+}
+
+function onScrubberClick(e: MouseEvent) {
+  if (!nowPlaying.value) return
+  const bar = e.currentTarget as HTMLElement
+  const rect = bar.getBoundingClientRect()
+  const ratio = (e.clientX - rect.left) / rect.width
+  seek(Math.floor(ratio * nowPlaying.value.durationMs))
+}
 </script>
 
 <template>
   <div id="player-wrapper">
-    <div id="song-info"></div>
-    <div id="player-controls">
-      <div id="play-button-wrapper">
-        <button id="play-button" @click="store.togglePaused()" :title="paused ? 'Play' : 'Pause'">
-          {{ paused ? '▶' : '⏸' }}
-        </button>
-      </div>
-      <div id="scrubber-wrapper">
-        <div id="scrubber-line"></div>
+    <!-- Song info -->
+    <div id="song-info">
+      <img v-if="nowPlaying?.albumArtUrl" :src="nowPlaying.albumArtUrl" id="album-art" />
+      <div v-if="nowPlaying" class="track-meta">
+        <span class="now-track-name">{{ nowPlaying.trackName }}</span>
+        <span class="now-track-artists">{{ nowPlaying.artists.join(', ') }}</span>
       </div>
     </div>
+
+    <!-- Controls -->
+    <div id="player-controls">
+      <div id="control-buttons">
+        <button class="control-btn" @click="previousTrack" title="Previous">⏮</button>
+        <button id="play-button" @click="togglePlay" :title="paused ? 'Play' : 'Pause'">
+          {{ paused ? '▶' : '⏸' }}
+        </button>
+        <button class="control-btn" @click="nextTrack" title="Next">⏭</button>
+      </div>
+      <div id="scrubber-row">
+        <span class="time-label">{{ formatTime(displayPositionMs) }}</span>
+        <div id="scrubber-wrapper" @click="onScrubberClick">
+          <div id="scrubber-fill" :style="{ width: progressPercent + '%' }"></div>
+        </div>
+        <span class="time-label">{{ formatTime(nowPlaying?.durationMs ?? 0) }}</span>
+      </div>
+    </div>
+
+    <!-- Volume (placeholder) -->
     <div id="volume-control"></div>
   </div>
 </template>
@@ -35,6 +95,43 @@ const paused = computed(() => store.paused)
 
 #song-info {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+#album-art {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.track-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.now-track-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.now-track-artists {
+  font-size: 11px;
+  color: var(--sp-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #player-controls {
@@ -45,10 +142,25 @@ const paused = computed(() => store.paused)
   flex: 1;
 }
 
-#play-button-wrapper {
+#control-buttons {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 12px;
+}
+
+.control-btn {
+  background: transparent;
+  border: none;
+  color: var(--sp-text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.1s;
+  line-height: 1;
+}
+
+.control-btn:hover {
+  color: var(--sp-text);
 }
 
 #play-button {
@@ -72,17 +184,46 @@ const paused = computed(() => store.paused)
   transform: scale(1.06);
 }
 
-#scrubber-wrapper {
+#scrubber-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   max-width: 500px;
-  padding: 4px 0;
-  cursor: pointer;
 }
 
-#scrubber-line {
+.time-label {
+  font-size: 11px;
+  color: var(--sp-text-muted);
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+
+#scrubber-wrapper {
+  flex: 1;
   height: 4px;
   background: #535353;
   border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: height 0.1s;
+}
+
+#scrubber-wrapper:hover {
+  height: 6px;
+}
+
+#scrubber-fill {
+  height: 100%;
+  background: var(--sp-text);
+  border-radius: 2px;
+  pointer-events: none;
+  transition: background 0.1s;
+}
+
+#scrubber-wrapper:hover #scrubber-fill {
+  background: var(--sp-green);
 }
 
 #volume-control {

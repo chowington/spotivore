@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useSpotivoreStore, type Track } from '@/stores/spotivore'
 import TrackItem from './TrackItem.vue'
+import { getCsrfToken } from '@/utils/csrf'
 
 const store = useSpotivoreStore()
 
@@ -72,10 +73,6 @@ async function syncWithSpotivore() {
   tracks.value = spotifyTracks
 }
 
-function getCsrfToken(): string {
-  const match = document.cookie.match(/csrftoken=([^;]+)/)
-  return match ? match[1] : ''
-}
 
 // When the current playlist changes, refresh the tracklist
 watch(playlist, () => {

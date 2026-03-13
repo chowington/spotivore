@@ -1,7 +1,13 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import PlaylistList from '@/components/PlaylistList.vue'
 import TrackList from '@/components/TrackList.vue'
 import PlayerComponent from '@/components/PlayerComponent.vue'
+import { initSpotifyPlayer } from '@/composables/useSpotifyPlayer'
+
+onMounted(() => {
+  initSpotifyPlayer()
+})
 </script>
 
 <template>

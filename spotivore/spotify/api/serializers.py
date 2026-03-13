@@ -9,6 +9,10 @@ class SpotifyAuthorizeURLSerializer(serializers.Serializer):
     authorize_url = serializers.URLField()
 
 
+class SpotifyTokenSerializer(serializers.Serializer):
+    access_token = serializers.CharField()
+
+
 class SpotifyConnectionSerializer(serializers.ModelSerializer):
     connected = serializers.SerializerMethodField()
     scopes = serializers.SerializerMethodField()
