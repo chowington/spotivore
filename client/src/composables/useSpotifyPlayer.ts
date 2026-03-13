@@ -1,5 +1,5 @@
 import { useSpotivoreStore } from '@/stores/spotivore'
-import { getCsrfToken } from '@/utils/csrf'
+import { getToken, play } from '@/api/backend'
 
 // Minimal Spotify Web Playback SDK type declarations
 interface SpotifyArtist {
@@ -58,12 +58,6 @@ declare global {
 let player: SpotifyPlayerInstance | null = null
 let sdkReady = false
 
-async function fetchToken(): Promise<string> {
-  const res = await fetch('/api/spotify/token/')
-  const data = await res.json()
-  return data.access_token as string
-}
-
 function loadSDK(): Promise<void> {
   return new Promise((resolve) => {
     if (sdkReady && window.Spotify) {
@@ -89,7 +83,7 @@ export async function initSpotifyPlayer(): Promise<void> {
   player = new window.Spotify.Player({
     name: 'Spotivore',
     getOAuthToken: (cb) => {
-      fetchToken().then(cb)
+      getToken().then(cb)
     },
     volume: 0.5,
   })
@@ -131,15 +125,5 @@ export async function playTrack(uri: string): Promise<void> {
     console.warn('No Spotivore player device ready')
     return
   }
-  const res = await fetch('/api/spotify/play/', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCsrfToken(),
-    },
-    body: JSON.stringify({ uris: [uri], device_id: store.deviceId }),
-  })
-  if (!res.ok) {
-    console.error(`Play failed: ${res.status} ${res.statusText}`)
-  }
+  await play([uri], store.deviceId)
 }

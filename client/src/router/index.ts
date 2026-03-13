@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { useSpotivoreStore } from '@/stores/spotivore'
+import { getConnection } from '@/api/backend'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,14 +20,8 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  const res = await fetch('/api/spotify/connection/')
-
-  if (res.status === 403) {
-    window.location.href = '/accounts/login/?next=/'
-    return false
-  }
-
-  const data = await res.json()
+  const data = await getConnection()
+  if (!data) return false
 
   if (data.csrf_token) {
     useSpotivoreStore().setCsrfToken(data.csrf_token)

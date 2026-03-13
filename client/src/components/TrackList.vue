@@ -1,20 +1,29 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useSpotivoreStore, type Track } from '@/stores/spotivore'
+import { getTracks } from '@/api/backend'
 import TrackItem from './TrackItem.vue'
+import Spinner from './Spinner.vue'
 
 const store = useSpotivoreStore()
 
 const tracks = ref<Track[]>([])
+const loading = ref(false)
 
 const playlist = computed(() => store.selectedPlaylist)
 
 async function refresh() {
   if (!playlist.value) return
   tracks.value = []
-  const res = await fetch(`/api/playlists/${playlist.value.spotify_id}/tracks/`)
-  if (!res.ok) { console.error(`Failed to fetch tracks: ${res.status} ${res.statusText}`); return }
-  tracks.value = await res.json()
+  loading.value = true
+  try {
+    const result = await getTracks(playlist.value.spotify_id)
+    if (result) tracks.value = result
+  } catch (error) {
+    console.error('Failed to refresh tracks', error)
+  } finally {
+    loading.value = false
+  }
 }
 
 // When the current playlist changes, refresh the tracklist
@@ -31,12 +40,13 @@ watch(playlist, () => {
         <span class="track-count">{{ tracks.length }} tracks</span>
       </div>
       <div id="playlist-tools">
-        <button id="refresh-btn" @click="refresh" title="Refresh tracklist">Refresh</button>
+        <button id="refresh-btn" @click="refresh" :disabled="loading" title="Refresh tracklist">Refresh</button>
       </div>
     </div>
     <div v-else class="no-playlist-message">Select a playlist</div>
     <div id="track-list-body">
-      <TrackItem v-for="track in tracks" :key="track.position" :track="track" />
+      <Spinner v-if="loading" />
+      <TrackItem v-else v-for="track in tracks" :key="track.position" :track="track" />
     </div>
   </div>
 </template>
@@ -91,8 +101,13 @@ button {
   transition: border-color 0.1s, background 0.1s;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   border-color: var(--sp-text);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 #track-list-body {
@@ -110,4 +125,5 @@ button:hover {
   color: var(--sp-text-muted);
   font-size: 15px;
 }
+
 </style>

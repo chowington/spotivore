@@ -1,15 +1,23 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useSpotivoreStore } from '@/stores/spotivore'
+import { getPlaylists } from '@/api/backend'
 import PlaylistItem from './PlaylistItem.vue'
+import Spinner from './Spinner.vue'
 
 const store = useSpotivoreStore()
+const loading = ref(false)
 
 async function refresh() {
+  if (loading.value) return
   store.playlists = []
-  const res = await fetch('/api/spotify/playlists/')
-  if (!res.ok) { console.error(`Failed to fetch playlists: ${res.status} ${res.statusText}`); return }
-  store.playlists = await res.json()
+  loading.value = true
+  try {
+    const playlists = await getPlaylists()
+    if (playlists) store.playlists = playlists
+  } finally {
+    loading.value = false
+  }
 }
 
 onMounted(() => {
@@ -20,7 +28,9 @@ onMounted(() => {
 <template>
   <div id="playlist-list">
     <div class="header-caps" @click="refresh">Playlists</div>
+    <Spinner v-if="loading" />
     <PlaylistItem
+      v-else
       v-for="playlist in store.playlists"
       :key="playlist.spotify_id"
       :playlist="playlist"
@@ -48,4 +58,5 @@ onMounted(() => {
 .header-caps:hover {
   color: var(--sp-text);
 }
+
 </style>
