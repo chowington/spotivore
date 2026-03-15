@@ -31,7 +31,6 @@ services:
       - django
     volumes:
       - ./client:/app/client:z
-      - /app/client/node_modules
     environment:
       - BACKEND_URL=http://django:8000
     ports:

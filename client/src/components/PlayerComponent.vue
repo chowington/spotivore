@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { Icon } from '@iconify/vue'
 import { useSpotivoreStore } from '@/stores/spotivore'
 import { togglePlay, previousTrack, nextTrack, seek, toggleShuffle } from '@/composables/useSpotifyPlayer'
 
@@ -65,17 +66,27 @@ function onScrubberClick(e: MouseEvent) {
     <!-- Controls -->
     <div id="player-controls">
       <div id="control-buttons">
-        <button class="control-btn" @click="previousTrack" title="Previous">⏮</button>
+        <div class="side-controls left-controls">
+          <button class="control-btn" @click="previousTrack" title="Previous">
+            <Icon icon="mdi:skip-previous" />
+          </button>
+        </div>
         <button id="play-button" @click="togglePlay" :title="paused ? 'Play' : 'Pause'">
-          {{ paused ? '▶' : '⏸' }}
+          <Icon :icon="paused ? 'mdi:play' : 'mdi:pause'" />
         </button>
-        <button class="control-btn" @click="nextTrack" title="Next">⏭</button>
-        <button
-          class="control-btn"
-          :class="{ 'shuffle-inactive': !shuffleEnabled }"
-          @click="toggleShuffle"
-          title="Toggle shuffle"
-        >🔀</button>
+        <div class="side-controls right-controls">
+          <button class="control-btn" @click="nextTrack" title="Next">
+            <Icon icon="mdi:skip-next" />
+          </button>
+          <button
+            class="control-btn"
+            :class="{ 'shuffle-inactive': !shuffleEnabled, 'shuffle-active': shuffleEnabled }"
+            @click="toggleShuffle"
+            title="Toggle shuffle"
+          >
+            <Icon icon="mdi:shuffle" />
+          </button>
+        </div>
       </div>
       <div id="scrubber-row">
         <span class="time-label">{{ formatTime(displayPositionMs) }}</span>
@@ -152,18 +163,34 @@ function onScrubberClick(e: MouseEvent) {
 #control-buttons {
   display: flex;
   align-items: center;
+  width: 100%;
+  gap: 20px;
+}
+
+.side-controls {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  align-self: center;
   gap: 12px;
+}
+
+.left-controls {
+  justify-content: flex-end;
+}
+
+.right-controls {
+  justify-content: flex-start;
 }
 
 .control-btn {
   background: transparent;
   border: none;
   color: var(--sp-text-muted);
-  font-size: 18px;
+  font-size: 24px;
   cursor: pointer;
   padding: 4px;
   transition: color 0.1s;
-  line-height: 1;
 }
 
 .control-btn:hover {
@@ -178,6 +205,14 @@ function onScrubberClick(e: MouseEvent) {
   opacity: 1;
 }
 
+.control-btn.shuffle-active {
+  color: var(--sp-green);
+}
+
+.control-btn.shuffle-active:hover {
+  color: var(--sp-green-light);
+}
+
 #play-button {
   width: 36px;
   height: 36px;
@@ -185,7 +220,7 @@ function onScrubberClick(e: MouseEvent) {
   background: var(--sp-text);
   color: #000;
   border: none;
-  font-size: 14px;
+  font-size: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
