@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from spotivore.music.models import ListeningSession
 from spotivore.music.models import Playlist
 from spotivore.music.models import Track
 from spotivore.music.models import TrackInPlaylist
@@ -47,6 +48,12 @@ class PlaylistDetailSerializer(PlaylistSerializer):
     class Meta(PlaylistSerializer.Meta):
         fields = [*PlaylistSerializer.Meta.fields, "entries"]
 
+
+
+class ListeningSessionSerializer(serializers.ModelSerializer[ListeningSession]):
+    class Meta:
+        model = ListeningSession
+        fields = ["playlist_spotify_id", "current_track_uri", "position_ms", "track_uris"]
 
 
 class PlaylistSublistSerializer(serializers.Serializer):
