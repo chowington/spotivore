@@ -4,8 +4,10 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
+from spotivore.music.models import ListeningSession
 from spotivore.music.models import Playlist
 from spotivore.music.models import TrackInPlaylist
 from spotivore.spotify.models import SpotifyConnection
@@ -14,6 +16,7 @@ from spotivore.spotify.services import SpotifyOAuthService
 
 from spotivore.music.services import sync_playlist
 
+from .serializers import ListeningSessionSerializer
 from .serializers import PlaylistDetailSerializer
 from .serializers import PlaylistSerializer
 from .serializers import PlaylistSublistSerializer
@@ -132,3 +135,29 @@ class PlaylistViewSet(
             PlaylistTrackEntrySerializer(entry).data,
             status=status.HTTP_200_OK,
         )
+
+
+class ListeningSessionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, playlist_spotify_id):
+        try:
+            session = ListeningSession.objects.get(owner=request.user, playlist_spotify_id=playlist_spotify_id)
+        except ListeningSession.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(ListeningSessionSerializer(session).data)
+
+    def put(self, request, playlist_spotify_id):
+        serializer = ListeningSessionSerializer(data={**request.data, "playlist_spotify_id": playlist_spotify_id})
+        serializer.is_valid(raise_exception=True)
+        d = serializer.validated_data
+        ListeningSession.objects.update_or_create(
+            owner=request.user,
+            playlist_spotify_id=playlist_spotify_id,
+            defaults={
+                "current_track_uri": d["current_track_uri"],
+                "position_ms": d["position_ms"],
+                "track_uris": d["track_uris"],
+            },
+        )
+        return Response(status=status.HTTP_200_OK)
