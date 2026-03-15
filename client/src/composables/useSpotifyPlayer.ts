@@ -1,3 +1,4 @@
+import { shuffle } from 'lodash-es'
 import { useSpotivoreStore } from '@/stores/spotivore'
 import { getToken, play } from '@/api/backend'
 
@@ -119,15 +120,6 @@ export function seek(positionMs: number): void {
   player?.seek(positionMs)
 }
 
-function fisherYatesShuffle<T>(arr: T[]): T[] {
-  const result = [...arr]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
-  }
-  return result
-}
-
 export async function playTrack(uri: string): Promise<void> {
   const store = useSpotivoreStore()
   if (!store.deviceId) {
@@ -139,7 +131,7 @@ export async function playTrack(uri: string): Promise<void> {
     const remaining = store.currentTracks.filter((t) => t.uri !== uri)
     const shuffledUris = [
       ...(clicked ? [clicked.uri] : [uri]),
-      ...fisherYatesShuffle(remaining).map((t) => t.uri),
+      ...shuffle(remaining).map((t) => t.uri),
     ]
     await play(shuffledUris, store.deviceId)
   } else {
