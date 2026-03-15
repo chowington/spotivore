@@ -36,6 +36,10 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
   // CSRF token returned by the connection endpoint on every route navigation
   const csrfToken = ref('')
 
+  // Shuffle state
+  const shuffleEnabled = ref(false)
+  const currentTracks = ref<Track[]>([])
+
   // Player state — kept in sync with the Spotify Web Playback SDK
   const deviceId = ref<string | null>(null)
   const playerReady = ref(false)
@@ -43,6 +47,14 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
   const nowPlaying = ref<NowPlaying | null>(null)
   const positionMs = ref(0)
   const lastPositionTimestamp = ref(Date.now())
+
+  function toggleShuffle() {
+    shuffleEnabled.value = !shuffleEnabled.value
+  }
+
+  function setCurrentTracks(tracks: Track[]) {
+    currentTracks.value = tracks
+  }
 
   function selectPlaylist(playlist: Playlist) {
     selectedPlaylist.value = playlist
@@ -92,12 +104,16 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     playlists,
     selectedPlaylist,
     csrfToken,
+    shuffleEnabled,
+    currentTracks,
     deviceId,
     playerReady,
     paused,
     nowPlaying,
     positionMs,
     lastPositionTimestamp,
+    toggleShuffle,
+    setCurrentTracks,
     selectPlaylist,
     setCsrfToken,
     setDeviceId,

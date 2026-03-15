@@ -1,3 +1,4 @@
+import { shuffle } from 'lodash-es'
 import { useSpotivoreStore } from '@/stores/spotivore'
 import { getToken, play } from '@/api/backend'
 
@@ -125,5 +126,20 @@ export async function playTrack(uri: string): Promise<void> {
     console.warn('No Spotivore player device ready')
     return
   }
-  await play([uri], store.deviceId)
+  if (store.shuffleEnabled && store.currentTracks.length > 0) {
+    const clicked = store.currentTracks.find((t) => t.uri === uri)
+    const remaining = store.currentTracks.filter((t) => t.uri !== uri)
+    const shuffledUris = [
+      ...(clicked ? [clicked.uri] : [uri]),
+      ...shuffle(remaining).map((t) => t.uri),
+    ]
+    await play(shuffledUris, store.deviceId)
+  } else {
+    await play([uri], store.deviceId)
+  }
+}
+
+export function toggleShuffle(): void {
+  const store = useSpotivoreStore()
+  store.toggleShuffle()
 }

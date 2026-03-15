@@ -18,7 +18,10 @@ async function refresh() {
   loading.value = true
   try {
     const result = await getTracks(playlist.value.spotify_id)
-    if (result) tracks.value = result
+    if (result) {
+      tracks.value = result
+      store.setCurrentTracks(result)
+    }
   } catch (error) {
     console.error('Failed to refresh tracks', error)
   } finally {
