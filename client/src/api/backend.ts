@@ -77,10 +77,9 @@ export async function getToken(): Promise<string> {
 export async function play(
   uris: string[],
   deviceId: string,
-  options?: { offset?: number; positionMs?: number },
+  options?: { positionMs?: number },
 ): Promise<void> {
   const body: Record<string, unknown> = { uris, device_id: deviceId }
-  if (options?.offset !== undefined) body.offset = { position: options.offset }
   if (options?.positionMs !== undefined) body.position_ms = options.positionMs
   const res = await fetch('/api/spotify/play/', {
     method: 'PUT',

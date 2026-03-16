@@ -160,11 +160,10 @@ export async function resumeSession(session: SessionData): Promise<void> {
   const store = useSpotivoreStore()
   if (!store.deviceId) return
   const index = session.track_uris.indexOf(session.current_track_uri)
-  store.setSession(store.selectedPlaylist!.spotify_id, session.track_uris)
-  await play(session.track_uris, store.deviceId, {
-    offset: index >= 0 ? index : 0,
-    positionMs: session.position_ms,
-  })
+  const startIndex = index >= 0 ? index : 0
+  const urisFromCurrent = session.track_uris.slice(startIndex)
+  store.setSession(store.selectedPlaylist!.spotify_id, urisFromCurrent)
+  await play(urisFromCurrent, store.deviceId, { positionMs: session.position_ms })
 }
 
 export function toggleShuffle(): void {

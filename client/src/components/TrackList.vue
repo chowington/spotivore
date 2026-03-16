@@ -27,7 +27,7 @@ async function refresh() {
       tracks.value = result
       store.setCurrentTracks(result)
     }
-    session.value = sessionResult
+    session.value = store.sessionPlaylistId === playlist.value?.spotify_id ? null : sessionResult
   } catch (error) {
     console.error('Failed to refresh tracks', error)
   } finally {
