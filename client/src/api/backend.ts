@@ -1,6 +1,12 @@
 import { getCsrfToken } from '@/utils/csrf'
 import type { Playlist, Track } from '@/stores/spotivore'
 
+export interface SessionData {
+  current_track_uri: string
+  position_ms: number
+  track_uris: string[]
+}
+
 export interface ConnectionData {
   csrf_token: string
   connected: boolean
@@ -68,16 +74,46 @@ export async function getToken(): Promise<string> {
   return data.access_token as string
 }
 
-export async function play(uris: string[], deviceId: string): Promise<void> {
+export async function play(
+  uris: string[],
+  deviceId: string,
+  options?: { positionMs?: number },
+): Promise<void> {
+  const body: Record<string, unknown> = { uris, device_id: deviceId }
+  if (options?.positionMs !== undefined) body.position_ms = options.positionMs
   const res = await fetch('/api/spotify/play/', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       'X-CSRFToken': getCsrfToken(),
     },
-    body: JSON.stringify({ uris, device_id: deviceId }),
+    body: JSON.stringify(body),
   })
   if (!res.ok) {
     console.error(`Play failed: ${res.status} ${res.statusText}`)
+  }
+}
+
+export async function getSession(playlistId: string): Promise<SessionData | null> {
+  const res = await fetch(`/api/sessions/${playlistId}/`)
+  if (res.status === 404) return null
+  if (!res.ok) {
+    console.error(`Failed to fetch session: ${res.status} ${res.statusText}`)
+    return null
+  }
+  return res.json()
+}
+
+export async function saveSession(playlistId: string, data: SessionData): Promise<void> {
+  const res = await fetch(`/api/sessions/${playlistId}/`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCsrfToken(),
+    },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) {
+    console.error(`Failed to save session: ${res.status} ${res.statusText}`)
   }
 }

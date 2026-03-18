@@ -40,6 +40,10 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
   const shuffleEnabled = ref(false)
   const currentTracks = ref<Track[]>([])
 
+  // Session state
+  const sessionPlaylistId = ref<string | null>(null)
+  const sessionTrackUris = ref<string[]>([])
+
   // Player state — kept in sync with the Spotify Web Playback SDK
   const deviceId = ref<string | null>(null)
   const playerReady = ref(false)
@@ -47,6 +51,11 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
   const nowPlaying = ref<NowPlaying | null>(null)
   const positionMs = ref(0)
   const lastPositionTimestamp = ref(Date.now())
+
+  function setSession(playlistId: string, trackUris: string[]) {
+    sessionPlaylistId.value = playlistId
+    sessionTrackUris.value = trackUris
+  }
 
   function toggleShuffle() {
     shuffleEnabled.value = !shuffleEnabled.value
@@ -106,12 +115,15 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     csrfToken,
     shuffleEnabled,
     currentTracks,
+    sessionPlaylistId,
+    sessionTrackUris,
     deviceId,
     playerReady,
     paused,
     nowPlaying,
     positionMs,
     lastPositionTimestamp,
+    setSession,
     toggleShuffle,
     setCurrentTracks,
     selectPlaylist,

@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from .models import ListeningSession
 from .models import Playlist
 from .models import Track
 from .models import TrackInPlaylist
@@ -33,3 +34,11 @@ class TrackInPlaylistAdmin(admin.ModelAdmin):
     list_display = ["playlist", "position", "track", "sublist"]
     list_select_related = ["playlist", "track", "sublist"]
     autocomplete_fields = ["playlist", "track", "sublist"]
+
+
+@admin.register(ListeningSession)
+class ListeningSessionAdmin(admin.ModelAdmin):
+    list_display = ["owner", "playlist_spotify_id", "current_track_uri", "updated_at"]
+    list_select_related = ["owner"]
+    search_fields = ["owner__username", "playlist_spotify_id"]
+    readonly_fields = ["updated_at"]

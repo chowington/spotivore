@@ -1,6 +1,6 @@
 import { shuffle } from 'lodash-es'
 import { useSpotivoreStore } from '@/stores/spotivore'
-import { getToken, play } from '@/api/backend'
+import { getToken, play, saveSession, type SessionData } from '@/api/backend'
 
 // Minimal Spotify Web Playback SDK type declarations
 interface SpotifyArtist {
@@ -98,7 +98,17 @@ export async function initSpotifyPlayer(): Promise<void> {
   })
 
   player.addListener('player_state_changed', (state) => {
-    if (state) store.setPlayerState(state)
+    if (!state) return
+    const track = state.track_window.current_track
+    const previousUri = store.nowPlaying?.uri
+    store.setPlayerState(state)
+    if (track.uri !== previousUri && store.sessionPlaylistId) {
+      saveSession(store.sessionPlaylistId, {
+        current_track_uri: track.uri,
+        position_ms: state.position,
+        track_uris: store.sessionTrackUris,
+      })
+    }
   })
 
   player.connect()
@@ -133,10 +143,27 @@ export async function playTrack(uri: string): Promise<void> {
       ...(clicked ? [clicked.uri] : [uri]),
       ...shuffle(remaining).map((t) => t.uri),
     ]
+    store.setSession(store.selectedPlaylist!.spotify_id, shuffledUris)
     await play(shuffledUris, store.deviceId)
   } else {
-    await play([uri], store.deviceId)
+    const clickedIndex = store.currentTracks.findIndex((t) => t.uri === uri)
+    const queueUris =
+      clickedIndex >= 0
+        ? store.currentTracks.slice(clickedIndex).map((t) => t.uri)
+        : [uri]
+    store.setSession(store.selectedPlaylist!.spotify_id, queueUris)
+    await play(queueUris, store.deviceId)
   }
+}
+
+export async function resumeSession(session: SessionData): Promise<void> {
+  const store = useSpotivoreStore()
+  if (!store.deviceId) return
+  const index = session.track_uris.indexOf(session.current_track_uri)
+  const startIndex = index >= 0 ? index : 0
+  const urisFromCurrent = session.track_uris.slice(startIndex)
+  store.setSession(store.selectedPlaylist!.spotify_id, urisFromCurrent)
+  await play(urisFromCurrent, store.deviceId, { positionMs: session.position_ms })
 }
 
 export function toggleShuffle(): void {

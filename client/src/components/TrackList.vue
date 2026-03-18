@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useSpotivoreStore, type Track } from '@/stores/spotivore'
-import { getTracks } from '@/api/backend'
+import { getTracks, getSession, type SessionData } from '@/api/backend'
+import { resumeSession } from '@/composables/useSpotifyPlayer'
 import TrackItem from './TrackItem.vue'
 import Spinner from './Spinner.vue'
 
@@ -9,6 +10,7 @@ const store = useSpotivoreStore()
 
 const tracks = ref<Track[]>([])
 const loading = ref(false)
+const session = ref<SessionData | null>(null)
 
 const playlist = computed(() => store.selectedPlaylist)
 
@@ -17,11 +19,15 @@ async function refresh() {
   tracks.value = []
   loading.value = true
   try {
-    const result = await getTracks(playlist.value.spotify_id)
+    const [result, sessionResult] = await Promise.all([
+      getTracks(playlist.value.spotify_id),
+      getSession(playlist.value.spotify_id),
+    ])
     if (result) {
       tracks.value = result
       store.setCurrentTracks(result)
     }
+    session.value = store.sessionPlaylistId === playlist.value?.spotify_id ? null : sessionResult
   } catch (error) {
     console.error('Failed to refresh tracks', error)
   } finally {
@@ -29,10 +35,24 @@ async function refresh() {
   }
 }
 
+async function handleResume() {
+  if (!session.value) return
+  await resumeSession(session.value!)
+  session.value = null
+}
+
 // When the current playlist changes, refresh the tracklist
 watch(playlist, () => {
   refresh()
 })
+
+// Hide resume button once playback starts for this playlist
+watch(
+  () => store.sessionPlaylistId,
+  (id) => {
+    if (id && id === playlist.value?.spotify_id) session.value = null
+  },
+)
 </script>
 
 <template>
@@ -43,6 +63,7 @@ watch(playlist, () => {
         <span class="track-count">{{ tracks.length }} tracks</span>
       </div>
       <div id="playlist-tools">
+        <button v-if="session" @click="handleResume" title="Resume listening session">Resume</button>
         <button id="refresh-btn" @click="refresh" :disabled="loading" title="Refresh tracklist">Refresh</button>
       </div>
     </div>
