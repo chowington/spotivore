@@ -66,6 +66,7 @@ target/
 .env
 .envs/.local/.django
 .envs/.local/.postgres
+.envs/.production/.cloudflare
 .envs/.production/.django
 .envs/.production/.postgres
 .venv
