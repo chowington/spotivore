@@ -62,8 +62,6 @@ target/
 # pyenv
 .python-version
 
-
-
 # Environments
 .env
 .envs/.local/.django
@@ -280,5 +278,3 @@ spotivore/media/
 
 .pytest_cache/
 .ipython/
-.env
-.envs/*
