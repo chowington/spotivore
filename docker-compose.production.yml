@@ -23,8 +23,10 @@ services:
     restart: unless-stopped
 
   vue-builder:
-    build: ./compose/production/node
-    command: sh -c "npm run build && cp -r /app/dist/. /vue_dist/"
+    build:
+      context: .
+      dockerfile: ./compose/production/node/Dockerfile
+    command: sh -c "npm run build && cp -r /app/client/dist/. /vue_dist/"
     volumes:
       - vue_dist:/vue_dist
 
