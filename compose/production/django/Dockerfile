@@ -76,6 +76,9 @@ COPY --chown=django:django . ${APP_HOME}
 # make django owner of the WORKDIR directory as well.
 RUN chown -R django:django ${APP_HOME}
 
+# Pre-create staticfiles dir so the volume mount inherits correct ownership
+RUN mkdir -p ${APP_HOME}/staticfiles && chown -R django:django ${APP_HOME}/staticfiles
+
 USER django
 
 RUN DATABASE_URL="" \
