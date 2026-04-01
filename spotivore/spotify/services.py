@@ -203,6 +203,8 @@ class SpotifyOAuthService:
                 body["offset"] = offset
         if position_ms is not None:
             body["position_ms"] = position_ms
+        if body.get("uris") is not None:
+            body["uris"] = body["uris"][:100]
         self._put_json(url, body, access_token)
 
     def _paginate(self, url: str, access_token: str) -> list[dict]:
