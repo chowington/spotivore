@@ -53,7 +53,7 @@ class PlaylistDetailSerializer(PlaylistSerializer):
 class ListeningSessionSerializer(serializers.ModelSerializer[ListeningSession]):
     class Meta:
         model = ListeningSession
-        fields = ["playlist_spotify_id", "current_track_uri", "position_ms", "track_uris"]
+        fields = ["playlist_spotify_id", "current_track_uri", "position_ms", "track_uris", "shuffled"]
 
 
 class PlaylistSublistSerializer(serializers.Serializer):

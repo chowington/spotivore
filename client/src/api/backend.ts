@@ -5,6 +5,7 @@ export interface SessionData {
   current_track_uri: string
   position_ms: number
   track_uris: string[]
+  shuffled: boolean
 }
 
 export interface ConnectionData {

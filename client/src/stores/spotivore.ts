@@ -61,6 +61,10 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     shuffleEnabled.value = !shuffleEnabled.value
   }
 
+  function setShuffle(value: boolean) {
+    shuffleEnabled.value = value
+  }
+
   function setCurrentTracks(tracks: Track[]) {
     currentTracks.value = tracks
   }
@@ -125,6 +129,7 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     lastPositionTimestamp,
     setSession,
     toggleShuffle,
+    setShuffle,
     setCurrentTracks,
     selectPlaylist,
     setCsrfToken,

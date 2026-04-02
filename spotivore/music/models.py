@@ -96,6 +96,7 @@ class ListeningSession(models.Model):
     current_track_uri = models.CharField(max_length=100)
     position_ms = models.PositiveIntegerField(default=0)
     track_uris = models.JSONField(default=list)
+    shuffled = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
