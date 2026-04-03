@@ -85,7 +85,9 @@ class TestSpotifyAPIViews:
         response = api_client.get(reverse("spotify_api:connection"))
 
         assert response.status_code == 200
-        assert response.json() == {
+        data = response.json()
+        data.pop("csrf_token", None)
+        assert data == {
             "connected": True,
             "spotify_user_id": connection.spotify_user_id,
             "display_name": connection.display_name,
