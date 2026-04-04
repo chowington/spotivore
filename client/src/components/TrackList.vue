@@ -25,7 +25,7 @@ async function refresh() {
     ])
     if (result) {
       tracks.value = result
-      store.setCurrentTracks(result)
+      store.setDisplayedTracks(result)
     }
     session.value = store.sessionPlaylistId === playlist.value?.spotify_id ? null : sessionResult
   } catch (error) {
