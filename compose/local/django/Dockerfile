@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # psycopg dependencies
   libpq-dev
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.11.3 /uv /usr/local/bin/uv
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements .

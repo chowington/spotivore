@@ -134,7 +134,7 @@ extend-unsafe-fixes = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"*/tests/*.py" = [
+"**/tests/*.py" = [
   "PLR2004",  # magic values are fine in tests (e.g. HTTP status codes)
   "S105",     # hardcoded passwords/tokens are expected in test fixtures
   "S106",     # same as S105 for function arguments
