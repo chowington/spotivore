@@ -58,3 +58,25 @@ jobs:
 
       - name: Tear down the Stack
         run: docker compose -f compose.local.yml down
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Run Frontend Tests
+        run: npx vitest run
+        working-directory: client
