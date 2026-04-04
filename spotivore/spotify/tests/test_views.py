@@ -5,7 +5,8 @@ from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
-from spotivore.spotify.constants import SPOTIFY_OAUTH_NEXT_SESSION_KEY, SPOTIFY_OAUTH_STATE_SESSION_KEY
+from spotivore.spotify.constants import SPOTIFY_OAUTH_NEXT_SESSION_KEY
+from spotivore.spotify.constants import SPOTIFY_OAUTH_STATE_SESSION_KEY
 from spotivore.spotify.models import SpotifyConnection
 from spotivore.users.models import User
 
@@ -34,7 +35,9 @@ class CallbackSpotifyServiceStub:
         }
 
     def build_connection_defaults(
-        self, token_payload: dict, profile_payload: dict
+        self,
+        token_payload: dict,
+        profile_payload: dict,
     ) -> dict:
         return {
             "spotify_user_id": profile_payload["id"],
@@ -63,7 +66,8 @@ class TestSpotifyCallbackView:
 
         service = CallbackSpotifyServiceStub()
         with patch(
-            "spotivore.spotify.views.get_spotify_oauth_service", return_value=service
+            "spotivore.spotify.views.get_spotify_oauth_service",
+            return_value=service,
         ):
             response = client.get(
                 reverse("spotify:callback"),

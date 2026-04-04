@@ -2,9 +2,9 @@ from django.urls import path
 
 from spotivore.spotify.api.views import SpotifyAuthURLView
 from spotivore.spotify.api.views import SpotifyConnectionView
-from spotivore.spotify.api.views import SpotifyPlayView
 from spotivore.spotify.api.views import SpotifyPlaylistListView
 from spotivore.spotify.api.views import SpotifyPlaylistTracksView
+from spotivore.spotify.api.views import SpotifyPlayView
 from spotivore.spotify.api.views import SpotifyTokenView
 
 app_name = "spotify_api"

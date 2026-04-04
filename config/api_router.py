@@ -14,6 +14,11 @@ router.register("users", UserViewSet)
 
 
 app_name = "api"
-urlpatterns = router.urls + [
-    path("sessions/<str:playlist_spotify_id>/", ListeningSessionView.as_view(), name="listening-session"),
+urlpatterns = [
+    *router.urls,
+    path(
+        "sessions/<str:playlist_spotify_id>/",
+        ListeningSessionView.as_view(),
+        name="listening-session",
+    ),
 ]

@@ -91,8 +91,15 @@ class TrackInPlaylist(models.Model):
 
 
 class ListeningSession(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="listening_sessions")
-    playlist_spotify_id = models.CharField(max_length=22, validators=[spotify_id_validator])
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="listening_sessions",
+    )
+    playlist_spotify_id = models.CharField(
+        max_length=22,
+        validators=[spotify_id_validator],
+    )
     current_track_uri = models.CharField(max_length=100)
     position_ms = models.PositiveIntegerField(default=0)
     track_uris = models.JSONField(default=list)
@@ -100,5 +107,11 @@ class ListeningSession(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["owner", "playlist_spotify_id"], name="unique_owner_playlist_session")
+            models.UniqueConstraint(
+                fields=["owner", "playlist_spotify_id"],
+                name="unique_owner_playlist_session",
+            ),
         ]
+
+    def __str__(self) -> str:
+        return f"{self.owner_id}:{self.playlist_spotify_id}"

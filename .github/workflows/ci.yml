@@ -41,20 +41,59 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
-      - name: Build the Stack
-        run: docker compose -f docker-compose.local.yml build django
+      - name: Create env files
+        run: |
+          mkdir -p .envs/.local
+          cat > .envs/.local/.django <<'EOF'
+          DJANGO_SETTINGS_MODULE=config.settings.local
+          DJANGO_SECRET_KEY=ci-only-not-for-production
+          DJANGO_DEBUG=True
+          DJANGO_ACCOUNT_ALLOW_REGISTRATION=True
+          USE_DOCKER=yes
+          POSTGRES_HOST=postgres
+          POSTGRES_PORT=5432
+          EOF
+          cat > .envs/.local/.postgres <<'EOF'
+          POSTGRES_HOST=postgres
+          POSTGRES_PORT=5432
+          POSTGRES_DB=spotivore
+          POSTGRES_USER=spotivore
+          POSTGRES_PASSWORD=spotivore
+          EOF
 
-      - name: Build the docs
-        run: docker compose -f docker-compose.docs.yml build docs
+      - name: Build the Stack
+        run: docker compose -f compose.local.yml build django
 
       - name: Check DB Migrations
-        run: docker compose -f docker-compose.local.yml run --rm django python manage.py makemigrations --check
+        run: docker compose -f compose.local.yml run --rm django python manage.py makemigrations --check
 
       - name: Run DB Migrations
-        run: docker compose -f docker-compose.local.yml run --rm django python manage.py migrate
+        run: docker compose -f compose.local.yml run --rm django python manage.py migrate
 
       - name: Run Django Tests
-        run: docker compose -f docker-compose.local.yml run django pytest
+        run: docker compose -f compose.local.yml run django pytest
 
       - name: Tear down the Stack
-        run: docker compose -f docker-compose.local.yml down
+        run: docker compose -f compose.local.yml down
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Run Frontend Tests
+        run: npx vitest run
+        working-directory: client

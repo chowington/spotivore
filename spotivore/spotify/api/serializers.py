@@ -16,7 +16,7 @@ class SpotifyTokenSerializer(serializers.Serializer):
 class SpotifyConnectionSerializer(serializers.ModelSerializer):
     connected = serializers.SerializerMethodField()
     scopes = serializers.SerializerMethodField()
-    expires_at = serializers.DateTimeField(default_timezone=datetime.timezone.utc)
+    expires_at = serializers.DateTimeField(default_timezone=datetime.UTC)
 
     class Meta:
         model = SpotifyConnection
