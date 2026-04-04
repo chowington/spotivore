@@ -65,6 +65,7 @@ target/
 # Environments
 .env
 .envs/.local/.django
+.envs/.local/.github
 .envs/.local/.postgres
 .envs/.production/.cloudflare
 .envs/.production/.django
@@ -279,3 +280,6 @@ spotivore/media/
 
 .pytest_cache/
 .ipython/
+
+# Claude
+n.mcp.json
