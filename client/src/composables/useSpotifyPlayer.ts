@@ -100,7 +100,7 @@ export async function initSpotifyPlayer(): Promise<void> {
   player.addListener('player_state_changed', (state) => {
     if (!state) return
     const track = state.track_window.current_track
-    if (!track.id) return
+    if (!track.id && !track.uri) return
     const previousUri = store.nowPlaying?.uri
     store.setPlayerState(state)
     if (track.uri !== previousUri && store.sessionPlaylistId) {
@@ -149,9 +149,13 @@ export async function playTrack(uri: string): Promise<void> {
     console.warn('No Spotivore player device ready')
     return
   }
-  if (store.shuffleEnabled && store.currentTracks.length > 0) {
-    const clicked = store.currentTracks.find((t) => t.uri === uri)
-    const remaining = store.currentTracks.filter((t) => t.uri !== uri)
+  if (store.displayedTracks.length === 0) {
+    console.warn('No tracks loaded')
+    return
+  }
+  if (store.shuffleEnabled) {
+    const clicked = store.displayedTracks.find((t) => t.uri === uri)
+    const remaining = store.displayedTracks.filter((t) => t.uri !== uri)
     const shuffledUris = [
       ...(clicked ? [clicked.uri] : [uri]),
       ...shuffle(remaining).map((t) => t.uri),
@@ -159,10 +163,10 @@ export async function playTrack(uri: string): Promise<void> {
     store.setSession(store.selectedPlaylist!.spotify_id, shuffledUris)
     await play(shuffledUris, store.deviceId)
   } else {
-    const clickedIndex = store.currentTracks.findIndex((t) => t.uri === uri)
+    const clickedIndex = store.displayedTracks.findIndex((t) => t.uri === uri)
     const queueUris =
       clickedIndex >= 0
-        ? store.currentTracks.slice(clickedIndex).map((t) => t.uri)
+        ? store.displayedTracks.slice(clickedIndex).map((t) => t.uri)
         : [uri]
     store.setSession(store.selectedPlaylist!.spotify_id, queueUris)
     await play(queueUris, store.deviceId)
@@ -180,7 +184,7 @@ export async function resumeSession(session: SessionData): Promise<void> {
   await play(urisFromCurrent, store.deviceId, { positionMs: session.position_ms })
 }
 
-export function toggleShuffle(): void {
+export async function toggleShuffle(): Promise<void> {
   const store = useSpotivoreStore()
   const newShuffleState = !store.shuffleEnabled
   store.setShuffle(newShuffleState)
@@ -195,11 +199,11 @@ export function toggleShuffle(): void {
     const remaining = currentIndex >= 0 ? store.sessionTrackUris.slice(currentIndex + 1) : []
     newUris = [currentUri, ...shuffle(remaining)]
   } else {
-    const currentIndex = store.currentTracks.findIndex((t) => t.uri === currentUri)
+    const currentIndex = store.displayedTracks.findIndex((t) => t.uri === currentUri)
     newUris =
       currentIndex >= 0
-        ? store.currentTracks.slice(currentIndex).map((t) => t.uri)
-        : store.currentTracks.map((t) => t.uri)
+        ? store.displayedTracks.slice(currentIndex).map((t) => t.uri)
+        : store.displayedTracks.map((t) => t.uri)
   }
 
   store.setSession(store.sessionPlaylistId, newUris)
@@ -209,4 +213,7 @@ export function toggleShuffle(): void {
     track_uris: newUris,
     shuffled: newShuffleState,
   })
+  if (store.deviceId) {
+    await play(newUris, store.deviceId)
+  }
 }

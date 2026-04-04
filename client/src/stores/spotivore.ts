@@ -38,7 +38,11 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
 
   // Shuffle state
   const shuffleEnabled = ref(false)
-  const currentTracks = ref<Track[]>([])
+  // Tracks currently shown in the UI (changes when the user browses playlists)
+  const displayedTracks = ref<Track[]>([])
+  // Full ordered track list for the playing session's playlist (set when playback starts,
+  // stable even if the user browses to a different playlist)
+  const sessionPlaylistTracks = ref<Track[]>([])
 
   // Session state
   const sessionPlaylistId = ref<string | null>(null)
@@ -65,8 +69,12 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     shuffleEnabled.value = value
   }
 
-  function setCurrentTracks(tracks: Track[]) {
-    currentTracks.value = tracks
+  function setDisplayedTracks(tracks: Track[]) {
+    displayedTracks.value = tracks
+  }
+
+  function setSessionPlaylistTracks(tracks: Track[]) {
+    sessionPlaylistTracks.value = tracks
   }
 
   function selectPlaylist(playlist: Playlist) {
@@ -118,7 +126,8 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     selectedPlaylist,
     csrfToken,
     shuffleEnabled,
-    currentTracks,
+    displayedTracks,
+    sessionPlaylistTracks,
     sessionPlaylistId,
     sessionTrackUris,
     deviceId,
@@ -130,7 +139,8 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     setSession,
     toggleShuffle,
     setShuffle,
-    setCurrentTracks,
+    setDisplayedTracks,
+    setSessionPlaylistTracks,
     selectPlaylist,
     setCsrfToken,
     setDeviceId,
