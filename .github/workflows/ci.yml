@@ -41,11 +41,28 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
+      - name: Create env files
+        run: |
+          mkdir -p .envs/.local
+          cat > .envs/.local/.django <<'EOF'
+          DJANGO_SETTINGS_MODULE=config.settings.local
+          DJANGO_SECRET_KEY=ci-only-not-for-production
+          DJANGO_DEBUG=True
+          DJANGO_ACCOUNT_ALLOW_REGISTRATION=True
+          USE_DOCKER=yes
+          POSTGRES_HOST=postgres
+          POSTGRES_PORT=5432
+          EOF
+          cat > .envs/.local/.postgres <<'EOF'
+          POSTGRES_HOST=postgres
+          POSTGRES_PORT=5432
+          POSTGRES_DB=spotivore
+          POSTGRES_USER=spotivore
+          POSTGRES_PASSWORD=spotivore
+          EOF
+
       - name: Build the Stack
         run: docker compose -f compose.local.yml build django
-
-      - name: Build the docs
-        run: docker compose -f compose.docs.yml build docs
 
       - name: Check DB Migrations
         run: docker compose -f compose.local.yml run --rm django python manage.py makemigrations --check
