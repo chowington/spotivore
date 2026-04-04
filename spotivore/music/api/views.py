@@ -10,11 +10,10 @@ from rest_framework.viewsets import GenericViewSet
 from spotivore.music.models import ListeningSession
 from spotivore.music.models import Playlist
 from spotivore.music.models import TrackInPlaylist
+from spotivore.music.services import sync_playlist
 from spotivore.spotify.models import SpotifyConnection
 from spotivore.spotify.services import SpotifyAPIError
 from spotivore.spotify.services import SpotifyOAuthService
-
-from spotivore.music.services import sync_playlist
 
 from .serializers import ListeningSessionSerializer
 from .serializers import PlaylistDetailSerializer
@@ -71,7 +70,10 @@ class PlaylistViewSet(
         try:
             tracks_data = service.get_playlist_tracks(connection, spotify_id)
         except ImproperlyConfigured as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         except SpotifyAPIError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
 
@@ -104,8 +106,8 @@ class PlaylistViewSet(
             return Response(
                 {
                     "sublist_spotify_id": [
-                        "A playlist cannot reference itself as a sublist."
-                    ]
+                        "A playlist cannot reference itself as a sublist.",
+                    ],
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -142,13 +144,18 @@ class ListeningSessionView(APIView):
 
     def get(self, request, playlist_spotify_id):
         try:
-            session = ListeningSession.objects.get(owner=request.user, playlist_spotify_id=playlist_spotify_id)
+            session = ListeningSession.objects.get(
+                owner=request.user,
+                playlist_spotify_id=playlist_spotify_id,
+            )
         except ListeningSession.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         return Response(ListeningSessionSerializer(session).data)
 
     def put(self, request, playlist_spotify_id):
-        serializer = ListeningSessionSerializer(data={**request.data, "playlist_spotify_id": playlist_spotify_id})
+        serializer = ListeningSessionSerializer(
+            data={**request.data, "playlist_spotify_id": playlist_spotify_id},
+        )
         serializer.is_valid(raise_exception=True)
         d = serializer.validated_data
         ListeningSession.objects.update_or_create(

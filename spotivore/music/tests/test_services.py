@@ -11,7 +11,7 @@ from spotivore.users.tests.factories import UserFactory
 pytestmark = pytest.mark.django_db
 
 
-def make_track_data(position, spotify_id, name="Track", artists=None, album="", uri=""):
+def make_track_data(position, spotify_id, name="Track", artists=None, album="", uri=""):  # noqa: PLR0913
     return {
         "position": position,
         "spotify_id": spotify_id,
@@ -30,7 +30,10 @@ def make_track_data(position, spotify_id, name="Track", artists=None, album="", 
 def test_creates_playlist_when_not_exists():
     user = UserFactory()
     result = sync_playlist(user, "abcdefghijklmnopqrstuv", "My Playlist", [])
-    assert Playlist.objects.filter(owner=user, spotify_id="abcdefghijklmnopqrstuv").exists()
+    assert Playlist.objects.filter(
+        owner=user,
+        spotify_id="abcdefghijklmnopqrstuv",
+    ).exists()
     assert result.name == "My Playlist"
 
 
@@ -38,12 +41,19 @@ def test_returns_existing_playlist_without_duplicate():
     user = UserFactory()
     PlaylistFactory(owner=user, spotify_id="abcdefghijklmnopqrstuv", name="Old Name")
     sync_playlist(user, "abcdefghijklmnopqrstuv", "Old Name", [])
-    assert Playlist.objects.filter(owner=user, spotify_id="abcdefghijklmnopqrstuv").count() == 1
+    assert (
+        Playlist.objects.filter(owner=user, spotify_id="abcdefghijklmnopqrstuv").count()
+        == 1
+    )
 
 
 def test_updates_playlist_name_when_changed():
     user = UserFactory()
-    playlist = PlaylistFactory(owner=user, spotify_id="abcdefghijklmnopqrstuv", name="Old Name")
+    playlist = PlaylistFactory(
+        owner=user,
+        spotify_id="abcdefghijklmnopqrstuv",
+        name="Old Name",
+    )
     sync_playlist(user, playlist.spotify_id, "New Name", [])
     playlist.refresh_from_db()
     assert playlist.name == "New Name"
@@ -51,7 +61,11 @@ def test_updates_playlist_name_when_changed():
 
 def test_does_not_update_playlist_name_when_empty_string():
     user = UserFactory()
-    playlist = PlaylistFactory(owner=user, spotify_id="abcdefghijklmnopqrstuv", name="Keep Me")
+    playlist = PlaylistFactory(
+        owner=user,
+        spotify_id="abcdefghijklmnopqrstuv",
+        name="Keep Me",
+    )
     sync_playlist(user, playlist.spotify_id, "", [])
     playlist.refresh_from_db()
     assert playlist.name == "Keep Me"
@@ -66,7 +80,10 @@ def test_creates_new_tracks():
     user = UserFactory()
     tracks = [make_track_data(0, "abcdefghijklmnopqrstuv", "Song A")]
     sync_playlist(user, "1234567890123456789012", "Playlist", tracks)
-    assert Track.objects.filter(spotify_id="abcdefghijklmnopqrstuv", name="Song A").exists()
+    assert Track.objects.filter(
+        spotify_id="abcdefghijklmnopqrstuv",
+        name="Song A",
+    ).exists()
 
 
 def test_does_not_duplicate_existing_track():
@@ -81,8 +98,13 @@ def test_new_track_has_correct_fields():
     user = UserFactory()
     tracks = [
         make_track_data(
-            0, "abcdefghijklmnopqrstuv", "Song", ["Artist A"], "Album X", "spotify:track:abc"
-        )
+            0,
+            "abcdefghijklmnopqrstuv",
+            "Song",
+            ["Artist A"],
+            "Album X",
+            "spotify:track:abc",
+        ),
     ]
     sync_playlist(user, "1234567890123456789012", "Playlist", tracks)
     track = Track.objects.get(spotify_id="abcdefghijklmnopqrstuv")

@@ -49,16 +49,22 @@ class PlaylistDetailSerializer(PlaylistSerializer):
         fields = [*PlaylistSerializer.Meta.fields, "entries"]
 
 
-
 class ListeningSessionSerializer(serializers.ModelSerializer[ListeningSession]):
     class Meta:
         model = ListeningSession
-        fields = ["playlist_spotify_id", "current_track_uri", "position_ms", "track_uris"]
+        fields = [
+            "playlist_spotify_id",
+            "current_track_uri",
+            "position_ms",
+            "track_uris",
+        ]
 
 
 class PlaylistSublistSerializer(serializers.Serializer):
     position = serializers.IntegerField(min_value=0)
     sublist_spotify_id = serializers.RegexField(r"^[A-Za-z0-9]{22}$")
     sublist_name = serializers.CharField(
-        required=False, allow_blank=True, max_length=255
+        required=False,
+        allow_blank=True,
+        max_length=255,
     )

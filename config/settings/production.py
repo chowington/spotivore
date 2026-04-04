@@ -1,5 +1,7 @@
 # ruff: noqa: E501
 from .base import *  # noqa: F403
+from .base import APPS_DIR
+from .base import BASE_DIR
 from .base import DATABASES
 from .base import REDIS_URL
 from .base import SPECTACULAR_SETTINGS

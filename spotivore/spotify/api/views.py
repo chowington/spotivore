@@ -29,7 +29,8 @@ def get_connection_for_user(user) -> SpotifyConnection:
     try:
         return user.spotify_connection
     except SpotifyConnection.DoesNotExist as exc:
-        raise NotFound("Spotify account not connected.") from exc
+        msg = "Spotify account not connected."
+        raise NotFound(msg) from exc
 
 
 class SpotifyAuthURLView(APIView):
@@ -46,7 +47,8 @@ class SpotifyAuthURLView(APIView):
             )
         except ImproperlyConfigured as exc:
             return Response(
-                {"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
         request.session[SPOTIFY_OAUTH_STATE_SESSION_KEY] = state
@@ -91,7 +93,8 @@ class SpotifyTokenView(APIView):
             access_token = service.ensure_valid_access_token(connection)
         except ImproperlyConfigured as exc:
             return Response(
-                {"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         serializer = SpotifyTokenSerializer({"access_token": access_token})
         return Response(serializer.data)
@@ -114,7 +117,8 @@ class SpotifyPlayView(APIView):
             )
         except ImproperlyConfigured as exc:
             return Response(
-                {"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except SpotifyAPIError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
@@ -131,7 +135,8 @@ class SpotifyPlaylistListView(APIView):
             playlists = service.get_current_user_playlists(connection)
         except ImproperlyConfigured as exc:
             return Response(
-                {"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except SpotifyAPIError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
@@ -144,9 +149,9 @@ class SpotifyPlaylistTracksView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, spotify_id: str):
-        if len(spotify_id) != 22 or not spotify_id.isalnum():
+        if len(spotify_id) != 22 or not spotify_id.isalnum():  # noqa: PLR2004
             raise ValidationError(
-                {"spotify_id": ["Spotify IDs must be 22 alphanumeric characters."]}
+                {"spotify_id": ["Spotify IDs must be 22 alphanumeric characters."]},
             )
 
         connection = get_connection_for_user(request.user)
@@ -155,7 +160,8 @@ class SpotifyPlaylistTracksView(APIView):
             tracks = service.get_playlist_tracks(connection, spotify_id)
         except ImproperlyConfigured as exc:
             return Response(
-                {"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except SpotifyAPIError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)

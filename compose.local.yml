@@ -1,7 +1,7 @@
 volumes:
   spotivore_local_postgres_data: {}
   spotivore_local_postgres_data_backups: {}
-  
+
 
 services:
   django:

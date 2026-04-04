@@ -4,7 +4,8 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from spotivore.spotify.constants import SPOTIFY_OAUTH_NEXT_SESSION_KEY, SPOTIFY_OAUTH_STATE_SESSION_KEY
+from spotivore.spotify.constants import SPOTIFY_OAUTH_NEXT_SESSION_KEY
+from spotivore.spotify.constants import SPOTIFY_OAUTH_STATE_SESSION_KEY
 from spotivore.spotify.models import SpotifyConnection
 from spotivore.spotify.tests.factories import SpotifyConnectionFactory
 from spotivore.users.models import User
@@ -33,7 +34,9 @@ class StubSpotifyService:
         ]
 
     def get_playlist_tracks(
-        self, connection: SpotifyConnection, spotify_id: str
+        self,
+        connection: SpotifyConnection,
+        spotify_id: str,
     ) -> list[dict]:
         return [
             {
@@ -68,7 +71,7 @@ class TestSpotifyAPIViews:
 
         assert response.status_code == 200
         assert response.json()["authorize_url"].startswith(
-            "https://accounts.spotify.com/authorize?"
+            "https://accounts.spotify.com/authorize?",
         )
         session = api_client.session
         assert session[SPOTIFY_OAUTH_STATE_SESSION_KEY]
@@ -97,7 +100,9 @@ class TestSpotifyAPIViews:
         }
 
     def test_delete_connection_disconnects_user(
-        self, user: User, api_client: APIClient
+        self,
+        user: User,
+        api_client: APIClient,
     ):
         SpotifyConnectionFactory(user=user)
         api_client.force_login(user)
@@ -108,7 +113,9 @@ class TestSpotifyAPIViews:
         assert not SpotifyConnection.objects.filter(user=user).exists()
 
     def test_playlist_list_returns_spotify_playlists(
-        self, user: User, api_client: APIClient
+        self,
+        user: User,
+        api_client: APIClient,
     ):
         connection = SpotifyConnectionFactory(user=user)
         api_client.force_login(user)
@@ -133,7 +140,9 @@ class TestSpotifyAPIViews:
         ]
 
     def test_playlist_tracks_returns_spotify_tracks(
-        self, user: User, api_client: APIClient
+        self,
+        user: User,
+        api_client: APIClient,
     ):
         SpotifyConnectionFactory(user=user)
         api_client.force_login(user)
@@ -146,7 +155,8 @@ class TestSpotifyAPIViews:
         ):
             response = api_client.get(
                 reverse(
-                    "spotify_api:playlist-tracks", kwargs={"spotify_id": spotify_id}
+                    "spotify_api:playlist-tracks",
+                    kwargs={"spotify_id": spotify_id},
                 ),
             )
 

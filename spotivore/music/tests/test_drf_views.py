@@ -13,7 +13,6 @@ from spotivore.music.models import Playlist
 from spotivore.music.models import Track
 from spotivore.music.tests.factories import ListeningSessionFactory
 from spotivore.music.tests.factories import PlaylistFactory
-from spotivore.music.tests.factories import TrackFactory
 from spotivore.music.tests.factories import TrackInPlaylistFactory
 from spotivore.spotify.services import SpotifyAPIError
 from spotivore.spotify.tests.factories import SpotifyConnectionFactory
@@ -27,7 +26,9 @@ class TestPlaylistViewSet:
         return APIRequestFactory()
 
     def test_get_queryset_is_scoped_to_user(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         owned = PlaylistFactory(owner=user)
         PlaylistFactory()
@@ -42,7 +43,9 @@ class TestPlaylistViewSet:
     @pytest.mark.skip(reason="sync action not yet implemented")
     @pytest.mark.django_db
     def test_sync_creates_playlist_and_entries(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         view = PlaylistViewSet.as_view({"post": "sync"})
         request = api_rf.post(
@@ -66,7 +69,8 @@ class TestPlaylistViewSet:
         assert playlist.name == "Road Trip"
         assert list(playlist.entries.values_list("position", flat=True)) == [0, 1]
         assert Track.objects.filter(
-            spotify_id="abcdefghijklmnopqrstuv", name="First"
+            spotify_id="abcdefghijklmnopqrstuv",
+            name="First",
         ).exists()
 
     @pytest.mark.skip(reason="sync action not yet implemented")
@@ -90,7 +94,7 @@ class TestPlaylistViewSet:
             {
                 "spotify_id": playlist.spotify_id,
                 "tracks": [
-                    {"spotify_id": "abcdefghijklmnopqrstuv", "name": "Replacement"}
+                    {"spotify_id": "abcdefghijklmnopqrstuv", "name": "Replacement"},
                 ],
             },
             format="json",
@@ -106,7 +110,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_assign_sublists_to_playlist_entry(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         playlist = PlaylistFactory(owner=user, spotify_id="1234567890123456789012")
         TrackInPlaylistFactory(playlist=playlist, position=0)
@@ -134,7 +140,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_list_sublists_returns_only_embedded_entries(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         playlist = PlaylistFactory(owner=user, spotify_id="1234567890123456789012")
         sublist = PlaylistFactory(owner=user, spotify_id="abcdefghijklmnopqrstuv")
@@ -165,7 +173,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_create_assigns_owner_to_authenticated_user(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         view = PlaylistViewSet.as_view({"post": "create"})
         request = api_rf.post(
@@ -175,7 +185,10 @@ class TestPlaylistViewSet:
         )
         force_authenticate(request, user=user)
         view(request)
-        assert Playlist.objects.filter(owner=user, spotify_id="abcdefghijklmnopqrstuv").exists()
+        assert Playlist.objects.filter(
+            owner=user,
+            spotify_id="abcdefghijklmnopqrstuv",
+        ).exists()
 
     @pytest.mark.django_db
     def test_retrieve_includes_entries(self, user: User, api_rf: APIRequestFactory):
@@ -193,7 +206,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_sublists_post_returns_400_for_nonexistent_position(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         playlist = PlaylistFactory(owner=user, spotify_id="1234567890123456789012")
 
@@ -212,7 +227,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_sublists_post_returns_400_for_self_reference(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         playlist = PlaylistFactory(owner=user, spotify_id="1234567890123456789012")
         TrackInPlaylistFactory(playlist=playlist, position=0)
@@ -232,11 +249,15 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_sublists_post_updates_existing_sublist_name(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         playlist = PlaylistFactory(owner=user, spotify_id="1234567890123456789012")
         sublist = PlaylistFactory(
-            owner=user, spotify_id="abcdefghijklmnopqrstuv", name="Old Name"
+            owner=user,
+            spotify_id="abcdefghijklmnopqrstuv",
+            name="Old Name",
         )
         TrackInPlaylistFactory(playlist=playlist, position=0)
 
@@ -260,7 +281,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_tracks_returns_404_when_no_spotify_connection(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         playlist = PlaylistFactory(owner=user, spotify_id="abcdefghijklmnopqrstuv")
 
@@ -274,7 +297,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_tracks_returns_503_on_improperly_configured(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         SpotifyConnectionFactory(user=user)
 
@@ -282,10 +307,14 @@ class TestPlaylistViewSet:
         request = api_rf.get("/api/playlists/abcdefghijklmnopqrstuv/tracks/")
         force_authenticate(request, user=user)
 
-        with patch("spotivore.music.api.views.SpotifyOAuthService.from_settings") as mock_from:
+        with patch(
+            "spotivore.music.api.views.SpotifyOAuthService.from_settings",
+        ) as mock_from:
             mock_service = MagicMock()
             mock_from.return_value = mock_service
-            mock_service.get_playlist_tracks.side_effect = ImproperlyConfigured("misconfigured")
+            mock_service.get_playlist_tracks.side_effect = ImproperlyConfigured(
+                "misconfigured",
+            )
 
             response = view(request, spotify_id="abcdefghijklmnopqrstuv")
 
@@ -293,7 +322,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_tracks_returns_502_on_spotify_api_error(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         SpotifyConnectionFactory(user=user)
 
@@ -301,7 +332,9 @@ class TestPlaylistViewSet:
         request = api_rf.get("/api/playlists/abcdefghijklmnopqrstuv/tracks/")
         force_authenticate(request, user=user)
 
-        with patch("spotivore.music.api.views.SpotifyOAuthService.from_settings") as mock_from:
+        with patch(
+            "spotivore.music.api.views.SpotifyOAuthService.from_settings",
+        ) as mock_from:
             mock_service = MagicMock()
             mock_from.return_value = mock_service
             mock_service.get_playlist_tracks.side_effect = SpotifyAPIError("api error")
@@ -312,7 +345,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_tracks_calls_sync_when_playlist_exists_locally(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         SpotifyConnectionFactory(user=user)
         playlist = PlaylistFactory(owner=user, spotify_id="abcdefghijklmnopqrstuv")
@@ -324,15 +359,19 @@ class TestPlaylistViewSet:
                 "artists": [],
                 "album": "",
                 "uri": "",
-            }
+            },
         ]
 
         view = PlaylistViewSet.as_view({"get": "tracks"})
         request = api_rf.get(f"/api/playlists/{playlist.spotify_id}/tracks/")
         force_authenticate(request, user=user)
 
-        with patch("spotivore.music.api.views.SpotifyOAuthService.from_settings") as mock_from, \
-             patch("spotivore.music.api.views.sync_playlist") as mock_sync:
+        with (
+            patch(
+                "spotivore.music.api.views.SpotifyOAuthService.from_settings",
+            ) as mock_from,
+            patch("spotivore.music.api.views.sync_playlist") as mock_sync,
+        ):
             mock_service = MagicMock()
             mock_from.return_value = mock_service
             mock_service.get_playlist_tracks.return_value = fake_tracks
@@ -344,7 +383,9 @@ class TestPlaylistViewSet:
 
     @pytest.mark.django_db
     def test_tracks_does_not_sync_when_playlist_not_local(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         SpotifyConnectionFactory(user=user)
         fake_tracks = [
@@ -355,15 +396,19 @@ class TestPlaylistViewSet:
                 "artists": [],
                 "album": "",
                 "uri": "",
-            }
+            },
         ]
 
         view = PlaylistViewSet.as_view({"get": "tracks"})
         request = api_rf.get("/api/playlists/abcdefghijklmnopqrstuv/tracks/")
         force_authenticate(request, user=user)
 
-        with patch("spotivore.music.api.views.SpotifyOAuthService.from_settings") as mock_from, \
-             patch("spotivore.music.api.views.sync_playlist") as mock_sync:
+        with (
+            patch(
+                "spotivore.music.api.views.SpotifyOAuthService.from_settings",
+            ) as mock_from,
+            patch("spotivore.music.api.views.sync_playlist") as mock_sync,
+        ):
             mock_service = MagicMock()
             mock_from.return_value = mock_service
             mock_service.get_playlist_tracks.return_value = fake_tracks
@@ -399,7 +444,11 @@ class TestListeningSessionView:
         assert response.data["current_track_uri"] == "spotify:track:xyz"
         assert response.data["position_ms"] == 3000
 
-    def test_get_returns_404_when_no_session(self, user: User, api_rf: APIRequestFactory):
+    def test_get_returns_404_when_no_session(
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
+    ):
         view = ListeningSessionView.as_view()
         request = api_rf.get("/api/sessions/abcdefghijklmnopqrstuv/")
         force_authenticate(request, user=user)
@@ -433,7 +482,8 @@ class TestListeningSessionView:
 
         assert response.status_code == 200
         assert ListeningSession.objects.filter(
-            owner=user, playlist_spotify_id="abcdefghijklmnopqrstuv"
+            owner=user,
+            playlist_spotify_id="abcdefghijklmnopqrstuv",
         ).exists()
 
     def test_put_updates_existing_session(self, user: User, api_rf: APIRequestFactory):
@@ -464,19 +514,22 @@ class TestListeningSessionView:
         assert session.position_ms == 9000
         assert (
             ListeningSession.objects.filter(
-                owner=user, playlist_spotify_id=session.playlist_spotify_id
+                owner=user,
+                playlist_spotify_id=session.playlist_spotify_id,
             ).count()
             == 1
         )
 
     def test_put_uses_playlist_spotify_id_from_url(
-        self, user: User, api_rf: APIRequestFactory
+        self,
+        user: User,
+        api_rf: APIRequestFactory,
     ):
         view = ListeningSessionView.as_view()
         request = api_rf.put(
             "/api/sessions/abcdefghijklmnopqrstuv/",
             {
-                "playlist_spotify_id": "zzzzzzzzzzzzzzzzzzzzzz",  # should be overridden by URL
+                "playlist_spotify_id": "zzzzzzzzzzzzzzzzzzzzzz",  # overridden by URL
                 "current_track_uri": "spotify:track:abc",
                 "position_ms": 0,
                 "track_uris": [],
@@ -489,7 +542,8 @@ class TestListeningSessionView:
 
         assert response.status_code == 200
         assert ListeningSession.objects.filter(
-            owner=user, playlist_spotify_id="abcdefghijklmnopqrstuv"
+            owner=user,
+            playlist_spotify_id="abcdefghijklmnopqrstuv",
         ).exists()
 
     def test_put_returns_403_when_unauthenticated(self, api_rf: APIRequestFactory):

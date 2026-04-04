@@ -8,7 +8,7 @@ from spotivore.music.models import TrackInPlaylist
 User = get_user_model()
 
 
-def sync_playlist(
+def sync_playlist(  # noqa: C901, PLR0912, PLR0915
     user: User,
     spotify_id: str,
     name: str,
@@ -46,8 +46,7 @@ def sync_playlist(
     # Resolve tracks — fetch existing in one query, bulk-create new ones.
     input_spotify_ids = [t["spotify_id"] for t in tracks]
     track_map: dict[str, Track] = {
-        t.spotify_id: t
-        for t in Track.objects.filter(spotify_id__in=input_spotify_ids)
+        t.spotify_id: t for t in Track.objects.filter(spotify_id__in=input_spotify_ids)
     }
 
     tracks_to_create: list[Track] = []
@@ -58,13 +57,15 @@ def sync_playlist(
         sid = track_data["spotify_id"]
         existing = track_map.get(sid)
         if existing is None:
-            tracks_to_create.append(Track(
-                spotify_id=sid,
-                name=track_data.get("name", ""),
-                artists=track_data.get("artists", []),
-                album=track_data.get("album", ""),
-                uri=track_data.get("uri", ""),
-            ))
+            tracks_to_create.append(
+                Track(
+                    spotify_id=sid,
+                    name=track_data.get("name", ""),
+                    artists=track_data.get("artists", []),
+                    album=track_data.get("album", ""),
+                    uri=track_data.get("uri", ""),
+                ),
+            )
         else:
             changed: list[str] = []
             for field in ("name", "album", "uri"):
@@ -88,8 +89,7 @@ def sync_playlist(
 
     # Sync TrackInPlaylist entries.
     existing_entries: dict[int, TrackInPlaylist] = {
-        entry.position: entry
-        for entry in playlist.entries.select_related("track")
+        entry.position: entry for entry in playlist.entries.select_related("track")
     }
 
     entries_to_create: list[TrackInPlaylist] = []
@@ -104,11 +104,13 @@ def sync_playlist(
             entry = existing_entries.get(position)
 
             if entry is None:
-                entries_to_create.append(TrackInPlaylist(
-                    playlist=playlist,
-                    track=track,
-                    position=position,
-                ))
+                entries_to_create.append(
+                    TrackInPlaylist(
+                        playlist=playlist,
+                        track=track,
+                        position=position,
+                    ),
+                )
             elif entry.track_id != track.id:
                 entry.track = track
                 entry.sublist = None

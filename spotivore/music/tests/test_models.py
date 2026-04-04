@@ -81,7 +81,7 @@ def test_playlist_str_returns_spotify_id_when_name_blank():
 
 def test_track_entries_order_by_position():
     later = TrackInPlaylistFactory(position=2)
-    earlier = TrackInPlaylistFactory(playlist=later.playlist, position=1)
+    _earlier = TrackInPlaylistFactory(playlist=later.playlist, position=1)
 
     positions = list(later.playlist.entries.values_list("position", flat=True))
 

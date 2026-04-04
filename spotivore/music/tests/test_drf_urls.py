@@ -12,7 +12,8 @@ def test_playlist_list():
 
 def test_playlist_detail():
     url = reverse(
-        "api:playlist-detail", kwargs={"spotify_id": "1234567890123456789012"}
+        "api:playlist-detail",
+        kwargs={"spotify_id": "1234567890123456789012"},
     )
     assert url == "/api/playlists/1234567890123456789012/"
     assert resolve(url).view_name == "api:playlist-detail"
@@ -26,7 +27,8 @@ def test_playlist_sync():
 
 def test_playlist_sublists():
     url = reverse(
-        "api:playlist-sublists", kwargs={"spotify_id": "1234567890123456789012"}
+        "api:playlist-sublists",
+        kwargs={"spotify_id": "1234567890123456789012"},
     )
     assert url == "/api/playlists/1234567890123456789012/sublists/"
     assert resolve(url).view_name == "api:playlist-sublists"
@@ -34,7 +36,8 @@ def test_playlist_sublists():
 
 def test_playlist_tracks():
     url = reverse(
-        "api:playlist-tracks", kwargs={"spotify_id": "1234567890123456789012"}
+        "api:playlist-tracks",
+        kwargs={"spotify_id": "1234567890123456789012"},
     )
     assert url == "/api/playlists/1234567890123456789012/tracks/"
     assert resolve(url).view_name == "api:playlist-tracks"
