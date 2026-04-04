@@ -16,7 +16,7 @@ from django.utils import timezone
 from spotivore.spotify.models import SpotifyConnection
 
 SPOTIFY_AUTHORIZE_URL = "https://accounts.spotify.com/authorize"
-SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
+SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"  # noqa: S105
 SPOTIFY_API_BASE_URL = "https://api.spotify.com/v1"
 
 
@@ -44,9 +44,11 @@ class SpotifyOAuthService:
 
     def ensure_configured(self) -> None:
         if not self.client_id or not self.client_secret:
-            raise ImproperlyConfigured(
-                "Spotify OAuth is not configured. Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET.",
+            msg = (
+                "Spotify OAuth is not configured. "
+                "Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET."
             )
+            raise ImproperlyConfigured(msg)
 
     def build_redirect_uri(self, request) -> str:
         configured_redirect_uri = settings.SPOTIFY_REDIRECT_URI
@@ -87,7 +89,9 @@ class SpotifyOAuthService:
         )
 
     def build_connection_defaults(
-        self, token_payload: dict, profile_payload: dict
+        self,
+        token_payload: dict,
+        profile_payload: dict,
     ) -> dict:
         return {
             "spotify_user_id": profile_payload["id"],
@@ -106,7 +110,7 @@ class SpotifyOAuthService:
             return connection.access_token
 
         token_payload = self.refresh_access_token(
-            refresh_token=connection.refresh_token
+            refresh_token=connection.refresh_token,
         )
         connection.access_token = token_payload["access_token"]
         connection.token_type = token_payload.get("token_type", connection.token_type)
@@ -152,7 +156,9 @@ class SpotifyOAuthService:
         ]
 
     def get_playlist_tracks(
-        self, connection: SpotifyConnection, spotify_id: str
+        self,
+        connection: SpotifyConnection,
+        spotify_id: str,
     ) -> list[dict]:
         access_token = self.ensure_valid_access_token(connection)
         items = self._paginate(
@@ -180,7 +186,7 @@ class SpotifyOAuthService:
             )
         return tracks
 
-    def play(
+    def play(  # noqa: PLR0913
         self,
         connection: SpotifyConnection,
         *,
@@ -219,9 +225,9 @@ class SpotifyOAuthService:
     def _post_form(self, url: str, payload: dict[str, str]) -> dict:
         encoded_payload = urlencode(payload).encode("utf-8")
         auth_token = b64encode(
-            f"{self.client_id}:{self.client_secret}".encode("utf-8")
+            f"{self.client_id}:{self.client_secret}".encode(),
         ).decode("ascii")
-        request = Request(
+        request = Request(  # noqa: S310
             url,
             data=encoded_payload,
             headers={
@@ -235,7 +241,7 @@ class SpotifyOAuthService:
 
     def _put_json(self, url: str, body: dict, access_token: str) -> dict:
         data = json.dumps(body).encode("utf-8")
-        request = Request(
+        request = Request(  # noqa: S310
             url,
             data=data,
             headers={
@@ -248,7 +254,7 @@ class SpotifyOAuthService:
         return self._send_json(request)
 
     def _get_json(self, url: str, access_token: str) -> dict:
-        request = Request(
+        request = Request(  # noqa: S310
             url,
             headers={
                 "Authorization": f"Bearer {access_token}",
@@ -260,7 +266,7 @@ class SpotifyOAuthService:
 
     def _send_json(self, request: Request) -> dict:
         try:
-            with urlopen(request) as response:
+            with urlopen(request) as response:  # noqa: S310
                 body = response.read().decode("utf-8")
         except HTTPError as exc:
             detail = exc.read().decode("utf-8")

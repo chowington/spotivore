@@ -15,8 +15,6 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
-    # User management
-    path("users/", include("spotivore.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     path("spotify/", include("spotivore.spotify.urls", namespace="spotify")),
     # Your stuff: custom urls includes go here

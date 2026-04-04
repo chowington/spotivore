@@ -24,10 +24,8 @@ def get_spotify_oauth_service() -> SpotifyOAuthService:
 
 def with_query_params(url: str, **params: str) -> str:
     parts = list(urlsplit(url))
-    query = dict(parse_qsl(parts[3], keep_blank_values=True))
-    for key, value in params.items():
-        if value:
-            query[key] = value
+    existing = dict(parse_qsl(parts[3], keep_blank_values=True))
+    query = {**existing, **{k: v for k, v in params.items() if v}}
     parts[3] = urlencode(query)
     return urlunsplit(parts)
 
@@ -57,7 +55,7 @@ class SpotifyCallbackView(View):
             request.session.pop(SPOTIFY_OAUTH_STATE_SESSION_KEY, None)
             request.session.pop(SPOTIFY_OAUTH_NEXT_SESSION_KEY, None)
             return HttpResponseRedirect(
-                with_query_params(failure_url, spotify_error=error)
+                with_query_params(failure_url, spotify_error=error),
             )
 
         expected_state = request.session.pop(SPOTIFY_OAUTH_STATE_SESSION_KEY, None)
@@ -78,7 +76,7 @@ class SpotifyCallbackView(View):
                 redirect_uri=redirect_uri,
             )
             profile_payload = service.fetch_current_user_profile(
-                token_payload["access_token"]
+                token_payload["access_token"],
             )
             if (
                 SpotifyConnection.objects.filter(spotify_user_id=profile_payload["id"])
@@ -87,7 +85,8 @@ class SpotifyCallbackView(View):
             ):
                 return HttpResponseRedirect(
                     with_query_params(
-                        failure_url, spotify_error="account_already_connected"
+                        failure_url,
+                        spotify_error="account_already_connected",
                     ),
                 )
             defaults = service.build_connection_defaults(token_payload, profile_payload)

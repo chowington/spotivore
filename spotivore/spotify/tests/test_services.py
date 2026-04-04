@@ -25,7 +25,7 @@ class DummyHTTPResponse:
 
 
 @pytest.fixture(autouse=True)
-def spotify_settings(settings):
+def _spotify_settings(settings):
     settings.SPOTIFY_CLIENT_ID = "spotify-client-id"
     settings.SPOTIFY_CLIENT_SECRET = "spotify-client-secret"
     settings.SPOTIFY_SCOPES = ("playlist-read-private", "user-read-email")
