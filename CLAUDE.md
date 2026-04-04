@@ -14,13 +14,13 @@ Tests must be run via Docker:
 
 ```bash
 # Run all backend tests
-docker compose -f docker-compose.local.yml run --rm django pytest
+docker compose -f compose.local.yml run --rm django pytest
 
 # Run a single test file
-docker compose -f docker-compose.local.yml run --rm django pytest spotivore/music/tests/test_models.py
+docker compose -f compose.local.yml run --rm django pytest spotivore/music/tests/test_models.py
 
 # Run a single test
-docker compose -f docker-compose.local.yml run --rm django pytest spotivore/music/tests/test_models.py::test_track_spotify_id_must_be_unique
+docker compose -f compose.local.yml run --rm django pytest spotivore/music/tests/test_models.py::test_track_spotify_id_must_be_unique
 
 # Run frontend unit tests
 cd client && npm run test:unit
@@ -46,10 +46,10 @@ cd client && npm run type-check
 
 ```bash
 # Start all local services
-docker compose -f docker-compose.local.yml up
+docker compose -f compose.local.yml up
 
 # Build the Django image
-docker compose -f docker-compose.local.yml build django
+docker compose -f compose.local.yml build django
 ```
 
 ## Architecture

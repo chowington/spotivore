@@ -81,8 +81,4 @@ RUN mkdir -p ${APP_HOME}/staticfiles && chown -R django:django ${APP_HOME}/stati
 
 USER django
 
-RUN DATABASE_URL="" \
-  DJANGO_SETTINGS_MODULE="config.settings.test" \
-  python manage.py compilemessages
-
 ENTRYPOINT ["/entrypoint"]
