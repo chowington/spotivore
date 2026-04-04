@@ -165,7 +165,7 @@ class ListeningSessionView(APIView):
                 "current_track_uri": d["current_track_uri"],
                 "position_ms": d["position_ms"],
                 "track_uris": d["track_uris"],
-                "shuffled": d["shuffled"],
+                "shuffled": d.get("shuffled", False),
             },
         )
         return Response(status=status.HTTP_200_OK)
