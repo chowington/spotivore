@@ -60,7 +60,7 @@ async function onPlay() {
 }
 
 .track-item.current .track-name {
-  color: var(--sp-green);
+  color: var(--sp-primary-light);
 }
 
 .track-position {
@@ -72,7 +72,7 @@ async function onPlay() {
 }
 
 .playing-icon {
-  color: var(--sp-green);
+  color: var(--sp-primary-light);
   font-size: 14px;
 }
 
@@ -90,7 +90,7 @@ async function onPlay() {
 }
 
 .play-btn:hover {
-  color: var(--sp-green);
+  color: var(--sp-primary-light);
 }
 
 .track-info {

@@ -210,11 +210,11 @@ function onScrubberClick(e: MouseEvent) {
 }
 
 .control-btn.shuffle-active {
-  color: var(--sp-green);
+  color: var(--sp-primary-light);
 }
 
 .control-btn.shuffle-active:hover {
-  color: var(--sp-green-light);
+  color: var(--sp-primary);
 }
 
 #play-button {
@@ -234,7 +234,7 @@ function onScrubberClick(e: MouseEvent) {
 }
 
 #play-button:hover {
-  background: var(--sp-green-light);
+  background: var(--sp-primary-light);
   transform: scale(1.06);
 }
 
@@ -277,7 +277,7 @@ function onScrubberClick(e: MouseEvent) {
 }
 
 #scrubber-wrapper:hover #scrubber-fill {
-  background: var(--sp-green);
+  background: var(--sp-primary);
 }
 
 #volume-control {

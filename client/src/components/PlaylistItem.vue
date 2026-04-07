@@ -7,12 +7,13 @@ const props = defineProps<{ playlist: Playlist }>()
 const store = useSpotivoreStore()
 
 const selected = computed(() => store.selectedPlaylist?.spotify_id === props.playlist.spotify_id)
+const playing = computed(() => store.sessionPlaylistId === props.playlist.spotify_id)
 </script>
 
 <template>
   <div
     class="playlist-item"
-    :class="{ active: selected }"
+    :class="{ active: selected, playing: playing }"
     :title="playlist.name"
     @click="store.selectPlaylist(playlist)"
   >
@@ -42,6 +43,14 @@ const selected = computed(() => store.selectedPlaylist?.spotify_id === props.pla
 .playlist-item.active {
   color: var(--sp-text);
   background: var(--sp-surface-high);
+}
+
+.playlist-item.playing {
+  color: var(--sp-primary-light);
+}
+
+.playlist-item.playing:hover {
+  color: var(--sp-primary);
 }
 
 .playlist-name {

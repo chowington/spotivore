@@ -7,8 +7,8 @@
   --sp-border: #2a2a2a;
   --sp-text: #fff;
   --sp-text-muted: #b3b3b3;
-  --sp-green: #1db954;
-  --sp-green-light: #1ed760;
+  --sp-primary: #1a73e8;
+  --sp-primary-light: #4f9ef8;
 }
 
 body {
@@ -21,4 +21,5 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  user-select: none;
 }
