@@ -17,6 +17,7 @@ const playlist = computed(() => store.selectedPlaylist)
 async function refresh() {
   if (!playlist.value) return
   tracks.value = []
+  store.setDisplayedTracks([])
   loading.value = true
   try {
     const [result, sessionResult] = await Promise.all([
@@ -25,7 +26,7 @@ async function refresh() {
     ])
     if (result) {
       tracks.value = result
-      store.setCurrentTracks(result)
+      store.setDisplayedTracks(result)
     }
     session.value = store.sessionPlaylistId === playlist.value?.spotify_id ? null : sessionResult
   } catch (error) {

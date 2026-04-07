@@ -14,7 +14,7 @@ describe('spotivore store', () => {
       expect(store.selectedPlaylist).toBeNull()
       expect(store.csrfToken).toBe('')
       expect(store.shuffleEnabled).toBe(false)
-      expect(store.currentTracks).toEqual([])
+      expect(store.displayedTracks).toEqual([])
       expect(store.sessionPlaylistId).toBeNull()
       expect(store.sessionTrackUris).toEqual([])
       expect(store.deviceId).toBeNull()
@@ -48,14 +48,14 @@ describe('spotivore store', () => {
     })
   })
 
-  describe('setCurrentTracks', () => {
-    it('sets currentTracks', () => {
+  describe('setDisplayedTracks', () => {
+    it('sets displayedTracks', () => {
       const store = useSpotivoreStore()
       const tracks = [
         { position: 0, spotify_id: 'id1', name: 'Track 1', artists: ['Artist'], album: 'Album', uri: 'spotify:track:id1' },
       ]
-      store.setCurrentTracks(tracks)
-      expect(store.currentTracks).toEqual(tracks)
+      store.setDisplayedTracks(tracks)
+      expect(store.displayedTracks).toEqual(tracks)
     })
   })
 

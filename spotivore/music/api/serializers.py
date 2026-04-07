@@ -57,6 +57,7 @@ class ListeningSessionSerializer(serializers.ModelSerializer[ListeningSession]):
             "current_track_uri",
             "position_ms",
             "track_uris",
+            "shuffled",
         ]
 
 
