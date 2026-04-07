@@ -106,6 +106,7 @@ describe('spotivore store', () => {
           uri: 'spotify:track:track1',
           artists: [{ name: 'Artist A' }, { name: 'Artist B' }],
           album: { name: 'Album Name', images: [{ url: 'https://example.com/art.jpg' }] },
+          linked_from: undefined as { id: string } | undefined,
         },
       },
       ...overrides,

@@ -208,7 +208,7 @@ describe('backend API', () => {
     it('sends PUT with session data and CSRF header', async () => {
       const { saveSession } = await import('@/api/backend')
       mockFetch.mockResolvedValueOnce(mockResponse(200, null))
-      const data = { current_track_uri: 'spotify:track:a', position_ms: 5000, track_uris: ['spotify:track:a'] }
+      const data = { current_track_uri: 'spotify:track:a', position_ms: 5000, track_uris: ['spotify:track:a'], shuffled: false }
       await saveSession('pl1', data)
       expect(mockFetch).toHaveBeenCalledWith('/api/sessions/pl1/', {
         method: 'PUT',
@@ -224,7 +224,7 @@ describe('backend API', () => {
       const { saveSession } = await import('@/api/backend')
       mockFetch.mockResolvedValueOnce(mockResponse(500, null, false))
       await expect(
-        saveSession('pl1', { current_track_uri: 'u', position_ms: 0, track_uris: [] })
+        saveSession('pl1', { current_track_uri: 'u', position_ms: 0, track_uris: [], shuffled: false })
       ).resolves.toBeUndefined()
     })
   })

@@ -56,15 +56,9 @@ describe('PlaylistItem', () => {
     expect(wrapper.find('.playlist-item').classes()).not.toContain('active')
   })
 
-  it('calls store.selectPlaylist when clicked', async () => {
-    const wrapper = mount(PlaylistItem, {
-      props: { playlist },
-      global: {
-        plugins: [createTestingPinia({ createSpy: vi.fn })],
-      },
-    })
-    const store = useSpotivoreStore()
+  it('emits select when clicked', async () => {
+    const wrapper = mountComponent()
     await wrapper.find('.playlist-item').trigger('click')
-    expect(store.selectPlaylist).toHaveBeenCalledWith(playlist)
+    expect(wrapper.emitted('select')).toHaveLength(1)
   })
 })

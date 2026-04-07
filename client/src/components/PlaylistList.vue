@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useSpotivoreStore } from '@/stores/spotivore'
+import { useSpotivoreStore, type Playlist } from '@/stores/spotivore'
 import { getPlaylists } from '@/api/backend'
 import PlaylistItem from './PlaylistItem.vue'
 import Spinner from './Spinner.vue'
@@ -8,7 +8,11 @@ import Spinner from './Spinner.vue'
 const store = useSpotivoreStore()
 const loading = ref(false)
 const emit = defineEmits<{ (e: 'playlist-selected'): void }>()
-function onContainerClick() { emit('playlist-selected') }
+
+function onItemSelect(playlist: Playlist) {
+  store.selectPlaylist(playlist)
+  emit('playlist-selected')
+}
 
 async function refresh() {
   if (loading.value) return
@@ -28,14 +32,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="playlist-list" @click="onContainerClick">
-    <div class="header-caps" @click.stop="refresh">Playlists</div>
+  <div id="playlist-list">
+    <div class="header-caps" @click="refresh">Playlists</div>
     <Spinner v-if="loading" />
     <PlaylistItem
       v-else
       v-for="playlist in store.playlists"
       :key="playlist.spotify_id"
       :playlist="playlist"
+      @select="onItemSelect(playlist)"
     />
   </div>
 </template>

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useSpotivoreStore, type Playlist } from '@/stores/spotivore'
 
 const props = defineProps<{ playlist: Playlist }>()
+const emit = defineEmits<{ (e: 'select'): void }>()
 
 const store = useSpotivoreStore()
 
@@ -15,7 +16,7 @@ const playing = computed(() => store.sessionPlaylistId === props.playlist.spotif
     class="playlist-item"
     :class="{ active: selected, playing: playing }"
     :title="playlist.name"
-    @click="store.selectPlaylist(playlist)"
+    @click="emit('select')"
   >
     <span class="playlist-name">{{ playlist.name }}</span>
   </div>

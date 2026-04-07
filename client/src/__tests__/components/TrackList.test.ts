@@ -150,6 +150,37 @@ describe('TrackList', () => {
     expect(refreshBtn.attributes('disabled')).toBeUndefined()
   })
 
+  it('ignores a stale response when the selected playlist changes before it resolves', async () => {
+    const playlist2 = { spotify_id: 'pl2', name: 'Playlist 2', track_count: 1 }
+    const tracks2 = [
+      { position: 0, spotify_id: 'tr3', name: 'Track 3', artists: ['C'], album: 'D', uri: 'spotify:track:tr3' },
+    ]
+
+    let resolveFirst: (v: typeof tracks) => void
+    mockGetTracks.mockReturnValueOnce(new Promise((r) => { resolveFirst = r }))
+    mockGetSession.mockResolvedValue(null)
+
+    const wrapper = mountComponent()
+    const store = useSpotivoreStore(wrapper.vm.$pinia)
+
+    // Select playlist 1 — its request is now in-flight
+    store.selectedPlaylist = playlist
+    await Promise.resolve()
+
+    // Switch to playlist 2 before the first request resolves
+    mockGetTracks.mockResolvedValueOnce(tracks2)
+    store.selectedPlaylist = playlist2
+    await flushPromises()
+
+    // Now resolve the stale response for playlist 1
+    resolveFirst!(tracks)
+    await flushPromises()
+
+    // Should show playlist 2's tracks, not playlist 1's
+    expect(wrapper.findAll('.track-item-stub')).toHaveLength(1)
+    expect(store.setDisplayedTracks).toHaveBeenLastCalledWith(tracks2)
+  })
+
   it('clicking Refresh re-fetches tracks', async () => {
     const { wrapper } = await mountAndSelect()
     mockGetTracks.mockResolvedValue([])
