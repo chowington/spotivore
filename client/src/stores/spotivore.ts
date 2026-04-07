@@ -55,6 +55,7 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
   const nowPlaying = ref<NowPlaying | null>(null)
   const positionMs = ref(0)
   const lastPositionTimestamp = ref(Date.now())
+  const trackChangedAt = ref(0)
 
   function setSession(playlistId: string, trackUris: string[]) {
     sessionPlaylistId.value = playlistId
@@ -109,6 +110,9 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     positionMs.value = state.position
     lastPositionTimestamp.value = Date.now()
     const track = state.track_window.current_track
+    if (track.uri !== nowPlaying.value?.uri) {
+      trackChangedAt.value = Date.now()
+    }
     nowPlaying.value = {
       trackId: track.id,
       linkedFromId: track.linked_from?.id ?? null,
@@ -136,6 +140,7 @@ export const useSpotivoreStore = defineStore('spotivore', () => {
     nowPlaying,
     positionMs,
     lastPositionTimestamp,
+    trackChangedAt,
     setSession,
     toggleShuffle,
     setShuffle,
