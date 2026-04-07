@@ -20,7 +20,11 @@ function mountComponent() {
     global: {
       plugins: [createTestingPinia({ createSpy: vi.fn })],
       stubs: {
-        PlaylistItem: { template: '<div class="playlist-item-stub">{{ playlist.name }}</div>', props: ['playlist'] },
+        PlaylistItem: {
+          template: '<div class="playlist-item-stub" @click="$emit(\'select\')">{{ playlist.name }}</div>',
+          props: ['playlist'],
+          emits: ['select'],
+        },
         Spinner: { template: '<div class="spinner-stub" />' },
       },
     },
@@ -96,11 +100,13 @@ describe('PlaylistList', () => {
   })
 
   describe('mobile navigation', () => {
-    it('emits playlist-selected when a playlist item is clicked', async () => {
+    it('calls store.selectPlaylist and emits playlist-selected when a playlist item emits select', async () => {
       mockGetPlaylists.mockResolvedValue(playlists)
       const wrapper = mountComponent()
       await flushPromises()
+      const store = useSpotivoreStore(wrapper.vm.$pinia)
       await wrapper.find('.playlist-item-stub').trigger('click')
+      expect(store.selectPlaylist).toHaveBeenCalledWith(playlists[0])
       expect(wrapper.emitted('playlist-selected')).toHaveLength(1)
     })
 
@@ -109,6 +115,14 @@ describe('PlaylistList', () => {
       const wrapper = mountComponent()
       await flushPromises()
       await wrapper.find('.header-caps').trigger('click')
+      expect(wrapper.emitted('playlist-selected')).toBeFalsy()
+    })
+
+    it('does not emit playlist-selected when empty space in the list is clicked', async () => {
+      mockGetPlaylists.mockResolvedValue(playlists)
+      const wrapper = mountComponent()
+      await flushPromises()
+      await wrapper.find('#playlist-list').trigger('click')
       expect(wrapper.emitted('playlist-selected')).toBeFalsy()
     })
   })

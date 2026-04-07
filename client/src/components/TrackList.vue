@@ -19,23 +19,27 @@ const playlist = computed(() => store.selectedPlaylist)
 
 async function refresh() {
   if (!playlist.value) return
+  const requestedId = playlist.value.spotify_id
   tracks.value = []
   store.setDisplayedTracks([])
   loading.value = true
   try {
     const [result, sessionResult] = await Promise.all([
-      getTracks(playlist.value.spotify_id),
-      getSession(playlist.value.spotify_id),
+      getTracks(requestedId),
+      getSession(requestedId),
     ])
+    if (playlist.value?.spotify_id !== requestedId) return
     if (result) {
       tracks.value = result
       store.setDisplayedTracks(result)
     }
-    session.value = store.sessionPlaylistId === playlist.value?.spotify_id ? null : sessionResult
+    session.value = store.sessionPlaylistId === requestedId ? null : sessionResult
   } catch (error) {
     console.error('Failed to refresh tracks', error)
   } finally {
-    loading.value = false
+    if (playlist.value?.spotify_id === requestedId) {
+      loading.value = false
+    }
   }
 }
 
