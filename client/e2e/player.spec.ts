@@ -29,14 +29,18 @@ test('player bar is present on the home page', async ({ page }) => {
   await expect(page.locator('#player-wrapper')).toBeVisible()
 })
 
-test('player controls render: play, previous, next, shuffle', async ({ page }) => {
+test('player controls render: play, previous, next, shuffle', async ({ page }, testInfo) => {
+  // On mobile, prev/next/shuffle are hidden — covered in home.mobile.spec.ts
+  test.skip(testInfo.project.name.startsWith('Mobile'), 'Mobile player layout covered in home.mobile.spec.ts')
   await expect(page.locator('#play-button')).toBeVisible()
   await expect(page.locator('button[title="Previous"]')).toBeVisible()
   await expect(page.locator('button[title="Next"]')).toBeVisible()
   await expect(page.locator('button[title="Toggle shuffle"]')).toBeVisible()
 })
 
-test('scrubber bar is present', async ({ page }) => {
+test('scrubber bar is present', async ({ page }, testInfo) => {
+  // On mobile, the scrubber is hidden — covered in home.mobile.spec.ts
+  test.skip(testInfo.project.name.startsWith('Mobile'), 'Mobile player layout covered in home.mobile.spec.ts')
   await expect(page.locator('#scrubber-wrapper')).toBeVisible()
 })
 

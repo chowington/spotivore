@@ -6,7 +6,9 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/')
 })
 
-test('home page structure renders all three sections', async ({ page }) => {
+test('home page structure renders all three sections', async ({ page }, testInfo) => {
+  // On mobile, #main-content starts hidden until a playlist is selected
+  test.skip(testInfo.project.name.startsWith('Mobile'), 'Mobile layout covered in home.mobile.spec.ts')
   await expect(page.locator('#sidebar-left')).toBeVisible()
   await expect(page.locator('#main-content')).toBeVisible()
   await expect(page.locator('#player-row')).toBeVisible()
@@ -83,7 +85,8 @@ test('"Resume" button appears when a session exists', async ({ page, browser: _b
   await page.goto('/')
 
   await page.locator('.playlist-item').first().click()
-
+  // Wait for tracks to confirm the panel switch (mobile) and session fetch completed
+  await expect(page.locator('.track-item')).toHaveCount(3)
   await expect(page.locator('button[title="Resume listening session"]')).toBeVisible()
 })
 

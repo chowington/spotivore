@@ -20,12 +20,17 @@ async function onPlay() {
   if (!props.track.uri) return
   await playTrack(props.track.uri)
 }
+
+function onItemClick() {
+  if (window.matchMedia('(max-width: 640px)').matches) onPlay()
+}
 </script>
 
 <template>
   <div
     class="track-item"
     :class="{ current: isCurrent }"
+    @click="onItemClick"
     @dblclick="onPlay"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
@@ -114,5 +119,12 @@ async function onPlay() {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .track-item {
+    padding: 12px 16px;
+    min-height: 56px;
+  }
 }
 </style>
