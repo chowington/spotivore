@@ -85,7 +85,8 @@ test('"Resume" button appears when a session exists', async ({ page, browser: _b
   await page.goto('/')
 
   await page.locator('.playlist-item').first().click()
-
+  // Wait for tracks to confirm the panel switch (mobile) and session fetch completed
+  await expect(page.locator('.track-item')).toHaveCount(3)
   await expect(page.locator('button[title="Resume listening session"]')).toBeVisible()
 })
 

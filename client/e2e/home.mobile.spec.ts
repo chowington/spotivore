@@ -82,6 +82,7 @@ test('"Resume" button is accessible after navigating to track list on mobile', a
   await page.goto('/')
 
   await page.locator('.playlist-item').first().click()
-
+  // Wait for the track list to confirm both the panel switch and session fetch completed
+  await expect(page.locator('.track-item')).toHaveCount(3)
   await expect(page.locator('button[title="Resume listening session"]')).toBeVisible()
 })
