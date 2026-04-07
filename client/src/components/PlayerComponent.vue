@@ -23,12 +23,13 @@ const nowPlaying = computed(() => store.nowPlaying)
 const shuffleEnabled = computed(() => store.shuffleEnabled)
 
 // Interpolate position between SDK state-change events so the scrubber moves smoothly.
-// Skip interpolation for 1s after a track change — the SDK fires multiple rapid events with
+// Skip interpolation briefly after a track change — the SDK fires multiple rapid events with
 // non-monotonic positions during transitions, which causes the timer to visibly stutter.
+const TRACK_CHANGE_SETTLE_MS = 1500
 const displayPositionMs = computed(() => {
   if (!nowPlaying.value) return 0
   if (paused.value) return store.positionMs
-  if (now.value - store.trackChangedAt < 1500) return store.positionMs
+  if (now.value - store.trackChangedAt < TRACK_CHANGE_SETTLE_MS) return store.positionMs
   return Math.min(
     store.positionMs + (now.value - store.lastPositionTimestamp),
     nowPlaying.value.durationMs,

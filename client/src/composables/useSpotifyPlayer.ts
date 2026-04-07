@@ -182,7 +182,7 @@ export async function resumeSession(session: SessionData): Promise<void> {
   const startIndex = index >= 0 ? index : 0
   const urisFromCurrent = session.track_uris.slice(startIndex)
   store.setSession(store.selectedPlaylist!.spotify_id, urisFromCurrent)
-  if (session.shuffled) store.setShuffle(true)
+  store.setShuffle(session.shuffled)
   await play(urisFromCurrent, store.deviceId, { positionMs: session.position_ms })
 }
 
@@ -208,11 +208,13 @@ export async function toggleShuffle(): Promise<void> {
   }
 
   store.setSession(store.sessionPlaylistId, newUris)
-  saveSession(store.sessionPlaylistId, {
+  void saveSession(store.sessionPlaylistId, {
     current_track_uri: currentUri,
     position_ms: store.positionMs,
     track_uris: newUris,
     shuffled: newShuffleState,
+  }).catch((error) => {
+    console.error('Failed to save session after toggling shuffle', error)
   })
   if (store.deviceId) {
     await play(newUris, store.deviceId)
