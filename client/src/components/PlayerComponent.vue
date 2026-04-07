@@ -70,7 +70,7 @@ function onScrubberClick(e: MouseEvent) {
     <!-- Controls -->
     <div id="player-controls">
       <div id="control-buttons">
-        <div class="side-controls left-controls">
+        <div class="side-controls left-controls mobile-hide">
           <button class="control-btn" @click="previousTrack" title="Previous">
             <Icon icon="mdi:skip-previous" />
           </button>
@@ -78,7 +78,7 @@ function onScrubberClick(e: MouseEvent) {
         <button id="play-button" @click="togglePlay" :title="paused ? 'Play' : 'Pause'">
           <Icon :icon="paused ? 'mdi:play' : 'mdi:pause'" />
         </button>
-        <div class="side-controls right-controls">
+        <div class="side-controls right-controls mobile-hide">
           <button class="control-btn" @click="nextTrack" title="Next">
             <Icon icon="mdi:skip-next" />
           </button>
@@ -92,7 +92,7 @@ function onScrubberClick(e: MouseEvent) {
           </button>
         </div>
       </div>
-      <div id="scrubber-row">
+      <div id="scrubber-row" class="mobile-hide">
         <span class="time-label">{{ formatTime(displayPositionMs) }}</span>
         <div id="scrubber-wrapper" @click="onScrubberClick">
           <div id="scrubber-fill" :style="{ width: progressPercent + '%' }"></div>
@@ -102,7 +102,7 @@ function onScrubberClick(e: MouseEvent) {
     </div>
 
     <!-- Volume (placeholder) -->
-    <div id="volume-control"></div>
+    <div id="volume-control" class="mobile-hide"></div>
   </div>
 </template>
 
@@ -284,5 +284,36 @@ function onScrubberClick(e: MouseEvent) {
   flex: 1;
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  #player-wrapper {
+    padding: 0 12px;
+    gap: 10px;
+  }
+
+  .mobile-hide {
+    display: none !important;
+  }
+
+  #album-art {
+    width: 40px;
+    height: 40px;
+  }
+
+  #player-controls {
+    flex: 0 0 auto;
+  }
+
+  #control-buttons {
+    gap: 0;
+    width: auto;
+  }
+
+  #play-button {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
 }
 </style>

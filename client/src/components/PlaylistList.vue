@@ -7,6 +7,8 @@ import Spinner from './Spinner.vue'
 
 const store = useSpotivoreStore()
 const loading = ref(false)
+const emit = defineEmits<{ (e: 'playlist-selected'): void }>()
+function onContainerClick() { emit('playlist-selected') }
 
 async function refresh() {
   if (loading.value) return
@@ -26,8 +28,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="playlist-list">
-    <div class="header-caps" @click="refresh">Playlists</div>
+  <div id="playlist-list" @click="onContainerClick">
+    <div class="header-caps" @click.stop="refresh">Playlists</div>
     <Spinner v-if="loading" />
     <PlaylistItem
       v-else

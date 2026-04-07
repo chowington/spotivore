@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { Icon } from '@iconify/vue'
 import { useSpotivoreStore, type Track } from '@/stores/spotivore'
 import { getTracks, getSession, type SessionData } from '@/api/backend'
 import { resumeSession } from '@/composables/useSpotifyPlayer'
 import TrackItem from './TrackItem.vue'
 import Spinner from './Spinner.vue'
+
+const emit = defineEmits<{ (e: 'back'): void }>()
 
 const store = useSpotivoreStore()
 
@@ -59,6 +62,9 @@ watch(
 <template>
   <div id="track-list">
     <div v-if="playlist" id="track-list-header">
+      <button class="back-btn" @click="emit('back')">
+        <Icon icon="mdi:arrow-left" /> Playlists
+      </button>
       <div id="track-list-title">
         <h2>{{ playlist.name }}</h2>
         <span class="track-count">{{ tracks.length }} tracks</span>
@@ -151,4 +157,39 @@ button:disabled {
   font-size: 15px;
 }
 
+.back-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--sp-text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.back-btn:hover {
+  color: var(--sp-text);
+  border-color: transparent;
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .back-btn {
+    display: flex;
+  }
+
+  #track-list-header {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  button {
+    min-height: 44px;
+  }
+}
 </style>

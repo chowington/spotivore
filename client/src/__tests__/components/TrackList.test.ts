@@ -158,4 +158,22 @@ describe('TrackList', () => {
     await flushPromises()
     expect(mockGetTracks).toHaveBeenCalledTimes(2)
   })
+
+  describe('mobile navigation', () => {
+    it('renders a back button when a playlist is selected', async () => {
+      const { wrapper } = await mountAndSelect()
+      expect(wrapper.find('.back-btn').exists()).toBe(true)
+    })
+
+    it('does not render a back button when no playlist is selected', () => {
+      const wrapper = mountComponent()
+      expect(wrapper.find('.back-btn').exists()).toBe(false)
+    })
+
+    it('emits back when the back button is clicked', async () => {
+      const { wrapper } = await mountAndSelect()
+      await wrapper.find('.back-btn').trigger('click')
+      expect(wrapper.emitted('back')).toHaveLength(1)
+    })
+  })
 })

@@ -6,7 +6,9 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/')
 })
 
-test('home page structure renders all three sections', async ({ page }) => {
+test('home page structure renders all three sections', async ({ page }, testInfo) => {
+  // On mobile, #main-content starts hidden until a playlist is selected
+  test.skip(testInfo.project.name.startsWith('Mobile'), 'Mobile layout covered in home.mobile.spec.ts')
   await expect(page.locator('#sidebar-left')).toBeVisible()
   await expect(page.locator('#main-content')).toBeVisible()
   await expect(page.locator('#player-row')).toBeVisible()

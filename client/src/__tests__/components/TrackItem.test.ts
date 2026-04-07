@@ -110,4 +110,24 @@ describe('TrackItem', () => {
     await flushPromises()
     expect(mockPlayTrack).toHaveBeenCalledWith('spotify:track:tr1')
   })
+
+  describe('mobile tap-to-play', () => {
+    it('calls playTrack on single click when matchMedia reports mobile viewport', async () => {
+      vi.stubGlobal('matchMedia', (_query: string) => ({ matches: true }))
+      const wrapper = mountComponent()
+      await wrapper.find('.track-item').trigger('click')
+      await flushPromises()
+      expect(mockPlayTrack).toHaveBeenCalledWith('spotify:track:tr1')
+      vi.unstubAllGlobals()
+    })
+
+    it('does not call playTrack on single click when matchMedia reports desktop viewport', async () => {
+      vi.stubGlobal('matchMedia', (_query: string) => ({ matches: false }))
+      const wrapper = mountComponent()
+      await wrapper.find('.track-item').trigger('click')
+      await flushPromises()
+      expect(mockPlayTrack).not.toHaveBeenCalled()
+      vi.unstubAllGlobals()
+    })
+  })
 })

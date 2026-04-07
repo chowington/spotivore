@@ -94,4 +94,22 @@ describe('PlaylistList', () => {
     await flushPromises()
     expect(wrapper.findAll('.playlist-item-stub')).toHaveLength(0)
   })
+
+  describe('mobile navigation', () => {
+    it('emits playlist-selected when a playlist item is clicked', async () => {
+      mockGetPlaylists.mockResolvedValue(playlists)
+      const wrapper = mountComponent()
+      await flushPromises()
+      await wrapper.find('.playlist-item-stub').trigger('click')
+      expect(wrapper.emitted('playlist-selected')).toHaveLength(1)
+    })
+
+    it('does not emit playlist-selected when the header is clicked', async () => {
+      mockGetPlaylists.mockResolvedValue(playlists)
+      const wrapper = mountComponent()
+      await flushPromises()
+      await wrapper.find('.header-caps').trigger('click')
+      expect(wrapper.emitted('playlist-selected')).toBeFalsy()
+    })
+  })
 })
