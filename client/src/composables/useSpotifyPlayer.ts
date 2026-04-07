@@ -208,12 +208,14 @@ export async function toggleShuffle(): Promise<void> {
   }
 
   store.setSession(store.sessionPlaylistId, newUris)
-  void saveSession(store.sessionPlaylistId, {
-    current_track_uri: currentUri,
-    position_ms: store.positionMs,
-    track_uris: newUris,
-    shuffled: newShuffleState,
-  }).catch((error) => {
+  void Promise.resolve(
+    saveSession(store.sessionPlaylistId, {
+      current_track_uri: currentUri,
+      position_ms: store.positionMs,
+      track_uris: newUris,
+      shuffled: newShuffleState,
+    }),
+  ).catch((error) => {
     console.error('Failed to save session after toggling shuffle', error)
   })
   if (store.deviceId) {
