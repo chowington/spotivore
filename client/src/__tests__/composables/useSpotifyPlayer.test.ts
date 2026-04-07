@@ -411,6 +411,22 @@ describe('useSpotifyPlayer', () => {
       })
       expect(play).not.toHaveBeenCalled()
     })
+
+    it('sets sessionPlaylistTracks from displayedTracks so toggleShuffle uses the correct playlist', async () => {
+      const { mod, store } = await setup()
+      const resumedPlaylistTracks = [
+        { position: 0, spotify_id: 'a', name: 'A', artists: ['X'], album: 'Y', uri: 'spotify:track:a' },
+        { position: 1, spotify_id: 'b', name: 'B', artists: ['X'], album: 'Y', uri: 'spotify:track:b' },
+      ]
+      store.setDisplayedTracks(resumedPlaylistTracks)
+      await mod.resumeSession({
+        current_track_uri: 'spotify:track:a',
+        position_ms: 0,
+        track_uris: ['spotify:track:a', 'spotify:track:b'],
+        shuffled: false,
+      })
+      expect(store.sessionPlaylistTracks).toEqual(resumedPlaylistTracks)
+    })
   })
 
   describe('nextTrack with session', () => {

@@ -153,6 +153,7 @@ export async function playTrack(uri: string): Promise<void> {
     console.warn('No tracks loaded')
     return
   }
+  store.setSessionPlaylistTracks(store.displayedTracks)
   if (store.shuffleEnabled) {
     const clicked = store.displayedTracks.find((t) => t.uri === uri)
     const remaining = store.displayedTracks.filter((t) => t.uri !== uri)
@@ -176,6 +177,7 @@ export async function playTrack(uri: string): Promise<void> {
 export async function resumeSession(session: SessionData): Promise<void> {
   const store = useSpotivoreStore()
   if (!store.deviceId) return
+  store.setSessionPlaylistTracks(store.displayedTracks)
   const index = session.track_uris.indexOf(session.current_track_uri)
   const startIndex = index >= 0 ? index : 0
   const urisFromCurrent = session.track_uris.slice(startIndex)
@@ -195,15 +197,14 @@ export async function toggleShuffle(): Promise<void> {
   let newUris: string[]
 
   if (newShuffleState) {
-    const currentIndex = store.sessionTrackUris.indexOf(currentUri)
-    const remaining = currentIndex >= 0 ? store.sessionTrackUris.slice(currentIndex + 1) : []
-    newUris = [currentUri, ...shuffle(remaining)]
+    const pool = store.sessionPlaylistTracks.filter((t) => t.uri !== currentUri).map((t) => t.uri)
+    newUris = [currentUri, ...shuffle(pool)]
   } else {
-    const currentIndex = store.displayedTracks.findIndex((t) => t.uri === currentUri)
+    const currentIndex = store.sessionPlaylistTracks.findIndex((t) => t.uri === currentUri)
     newUris =
       currentIndex >= 0
-        ? store.displayedTracks.slice(currentIndex).map((t) => t.uri)
-        : store.displayedTracks.map((t) => t.uri)
+        ? store.sessionPlaylistTracks.slice(currentIndex).map((t) => t.uri)
+        : store.sessionPlaylistTracks.map((t) => t.uri)
   }
 
   store.setSession(store.sessionPlaylistId, newUris)
