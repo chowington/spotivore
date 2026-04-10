@@ -39,15 +39,14 @@ function mountComponent(initialState: Record<string, unknown> = {}) {
   })
 }
 
-// jsdom doesn't implement ResizeObserver; stub it as a no-op for all tests.
-vi.stubGlobal('ResizeObserver', class {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-})
-
 describe('PlayerComponent', () => {
   beforeEach(() => {
+    // jsdom doesn't implement ResizeObserver; stub it as a no-op.
+    vi.stubGlobal('ResizeObserver', class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    })
     vi.useFakeTimers()
     mockTogglePlay.mockReset()
     mockPreviousTrack.mockReset()
@@ -58,6 +57,7 @@ describe('PlayerComponent', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+    vi.unstubAllGlobals()
   })
 
   describe('formatTime', () => {
@@ -213,6 +213,12 @@ describe('PlayerComponent', () => {
 
     afterEach(() => {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth })
+    })
+
+    it('does not open when nowPlaying is null', async () => {
+      const wrapper = mountComponent({ spotivore: { nowPlaying: null } })
+      await wrapper.find('#song-info').trigger('click')
+      expect(wrapper.find('.fs-player').exists()).toBe(false)
     })
 
     it('does not open on desktop (innerWidth > 640)', async () => {

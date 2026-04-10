@@ -14,11 +14,21 @@ onMounted(() => {
     now.value = Date.now()
   }, 500)
 
-  const ro = new ResizeObserver(checkMarquees)
-  watch(miniTrackNameEl, (el) => { if (el) ro.observe(el) }, { immediate: true })
-  watch(fsTrackNameEl, (el) => { if (el) ro.observe(el) }, { immediate: true })
+  const ro = typeof ResizeObserver !== 'undefined'
+    ? new ResizeObserver(checkMarquees)
+    : null
+  watch(miniTrackNameEl, (el, oldEl) => {
+    if (oldEl && oldEl !== el) ro?.unobserve(oldEl)
+    if (el && ro) ro.observe(el)
+  }, { immediate: true })
+  watch(fsTrackNameEl, (el, oldEl) => {
+    if (oldEl && oldEl !== el) ro?.unobserve(oldEl)
+    if (el && ro) ro.observe(el)
+  }, { immediate: true })
   watch(fullscreenOpen, (open) => { if (open) nextTick(checkMarquees) })
-  onUnmounted(() => ro.disconnect())
+  onUnmounted(() => {
+    if (ro) ro.disconnect()
+  })
 })
 onUnmounted(() => {
   if (ticker) clearInterval(ticker)
@@ -57,7 +67,7 @@ function onScrubberClick(e: MouseEvent) {
   if (!nowPlaying.value) return
   const bar = e.currentTarget as HTMLElement
   const rect = bar.getBoundingClientRect()
-  const ratio = (e.clientX - rect.left) / rect.width
+  const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
   seek(Math.floor(ratio * nowPlaying.value.durationMs))
 }
 
@@ -98,6 +108,7 @@ const fullscreenOpen = ref(false)
 let swipeTouchStartY = 0
 
 function openFullscreen() {
+  if (!nowPlaying.value) return
   if (window.innerWidth <= 640) {
     fullscreenOpen.value = true
   }
@@ -173,7 +184,7 @@ function onFullscreenTouchEnd(e: TouchEvent) {
       @touchend.passive="onFullscreenTouchEnd"
     >
       <div class="fs-header">
-        <button class="fs-close-btn" @click="fullscreenOpen = false" title="Close">
+        <button class="fs-close-btn" @click="fullscreenOpen = false" title="Close" aria-label="Close">
           <Icon icon="mdi:chevron-down" />
         </button>
         <span class="fs-label">Now Playing</span>
@@ -211,13 +222,13 @@ function onFullscreenTouchEnd(e: TouchEvent) {
       <div class="fs-controls">
         <!-- spacer to balance shuffle button -->
         <div class="fs-controls-spacer" />
-        <button class="fs-control-btn" @click="previousTrack" title="Previous">
+        <button class="fs-control-btn" @click="previousTrack" title="Previous" aria-label="Previous">
           <Icon icon="mdi:skip-previous" />
         </button>
         <button class="fs-play-btn" @click="togglePlay" :title="paused ? 'Play' : 'Pause'">
           <Icon :icon="paused ? 'mdi:play' : 'mdi:pause'" />
         </button>
-        <button class="fs-control-btn" @click="nextTrack" title="Next">
+        <button class="fs-control-btn" @click="nextTrack" title="Next" aria-label="Next">
           <Icon icon="mdi:skip-next" />
         </button>
         <button
@@ -225,6 +236,8 @@ function onFullscreenTouchEnd(e: TouchEvent) {
           :class="{ 'shuffle-inactive': !shuffleEnabled, 'shuffle-active': shuffleEnabled }"
           @click="toggleShuffle"
           title="Toggle shuffle"
+          aria-label="Toggle shuffle"
+          :aria-pressed="shuffleEnabled"
         >
           <Icon icon="mdi:shuffle" />
         </button>
