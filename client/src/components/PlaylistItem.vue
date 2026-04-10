@@ -18,7 +18,10 @@ const playing = computed(() => store.sessionPlaylistId === props.playlist.spotif
     :title="playlist.name"
     @click="emit('select')"
   >
-    <span class="playlist-name">{{ playlist.name }}</span>
+    <div class="playlist-text">
+      <span class="playlist-name">{{ playlist.name }}</span>
+      <span class="playlist-meta">{{ playlist.track_count }} tracks</span>
+    </div>
   </div>
 </template>
 
@@ -26,14 +29,13 @@ const playing = computed(() => store.sessionPlaylistId === props.playlist.spotif
 .playlist-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 16px;
-  margin: 1px 8px;
-  border-radius: 4px;
+  padding: 10px 16px 10px 20px;
+  margin: 2px 8px;
+  border-radius: 6px;
   cursor: pointer;
   color: var(--sp-text-muted);
-  font-size: 14px;
-  transition: background 0.1s, color 0.1s;
+  border-left: 3px solid transparent;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
 }
 
 .playlist-item:hover {
@@ -44,6 +46,7 @@ const playing = computed(() => store.sessionPlaylistId === props.playlist.spotif
 .playlist-item.active {
   color: var(--sp-text);
   background: var(--sp-surface-high);
+  border-left-color: var(--sp-primary-light);
 }
 
 .playlist-item.playing {
@@ -54,10 +57,29 @@ const playing = computed(() => store.sessionPlaylistId === props.playlist.spotif
   color: var(--sp-primary);
 }
 
+.playlist-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
 .playlist-name {
+  font-size: 14px;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.playlist-meta {
+  font-size: 11px;
+  color: var(--sp-text-muted);
+  opacity: 0.7;
+}
+
+.playlist-item.active .playlist-meta,
+.playlist-item:hover .playlist-meta {
+  opacity: 1;
+}
 </style>
