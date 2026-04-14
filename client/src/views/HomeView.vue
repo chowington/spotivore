@@ -34,7 +34,7 @@ function onBackToPlaylists() { mobileView.value = 'playlists' }
 #spotivore-app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   background: var(--sp-bg);
   color: var(--sp-text);
 }
