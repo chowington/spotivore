@@ -26,21 +26,12 @@ DEBUG = env.bool("DJANGO_DEBUG", False)
 TIME_ZONE = "America/Chicago"
 # https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 LANGUAGE_CODE = "en-us"
-# https://docs.djangoproject.com/en/dev/ref/settings/#languages
-# from django.utils.translation import gettext_lazy as _
-# LANGUAGES = [
-#     ('en', _('English')),
-#     ('fr-fr', _('French')),
-#     ('pt-br', _('Portuguese')),
-# ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
-USE_I18N = True
+USE_I18N = False
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
-# https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
-LOCALE_PATHS = [str(BASE_DIR / "locale")]
 
 # DATABASES
 # ------------------------------------------------------------------------------
@@ -85,6 +76,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "spotivore.music",
+    "spotivore.spotify",
     "spotivore.users",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -105,7 +97,7 @@ AUTHENTICATION_BACKENDS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = "users.User"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = "users:redirect"
+LOGIN_REDIRECT_URL = "/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = "account_login"
 
@@ -137,7 +129,6 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -184,12 +175,10 @@ TEMPLATES = [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
-                "django.template.context_processors.i18n",
                 "django.template.context_processors.media",
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "spotivore.users.context_processors.allauth_settings",
             ],
         },
     },
@@ -275,12 +264,8 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_ADAPTER = "spotivore.users.adapters.AccountAdapter"
-# https://docs.allauth.org/en/latest/account/forms.html
-ACCOUNT_FORMS = {"signup": "spotivore.users.forms.UserSignupForm"}
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
 SOCIALACCOUNT_ADAPTER = "spotivore.users.adapters.SocialAccountAdapter"
-# https://docs.allauth.org/en/latest/socialaccount/configuration.html
-SOCIALACCOUNT_FORMS = {"signup": "spotivore.users.forms.UserSocialSignupForm"}
 
 # django-rest-framework
 # -------------------------------------------------------------------------------
@@ -308,3 +293,25 @@ SPECTACULAR_SETTINGS = {
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+SPOTIFY_CLIENT_ID = env("SPOTIFY_CLIENT_ID", default="")
+SPOTIFY_CLIENT_SECRET = env("SPOTIFY_CLIENT_SECRET", default="")
+SPOTIFY_REDIRECT_URI = env("SPOTIFY_REDIRECT_URI", default="")
+SPOTIFY_SCOPES = env.list(
+    "SPOTIFY_SCOPES",
+    default=[
+        "playlist-read-collaborative",
+        "playlist-modify-private",
+        "playlist-modify-public",
+        "playlist-read-private",
+        "user-read-email",
+        "user-read-private",
+        "user-modify-playback-state",
+        "streaming",
+    ],
+)
+SPOTIFY_AUTH_SUCCESS_URL = env("SPOTIFY_AUTH_SUCCESS_URL", default="/")
+SPOTIFY_AUTH_FAILURE_URL = env("SPOTIFY_AUTH_FAILURE_URL", default="/")
+SPOTIFY_TOKEN_REFRESH_LEEWAY_SECONDS = env.int(
+    "SPOTIFY_TOKEN_REFRESH_LEEWAY_SECONDS",
+    default=60,
+)

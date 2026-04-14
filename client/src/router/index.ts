@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { useSpotivoreStore } from '@/stores/spotivore'
+import { getConnection } from '@/api/backend'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,14 +12,27 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue'),
     },
   ],
+})
+
+router.beforeEach(async (to) => {
+  const data = await getConnection()
+  if (!data) return false
+
+  if (data.csrf_token) {
+    useSpotivoreStore().setCsrfToken(data.csrf_token)
+  }
+
+  if (!data.connected) {
+    if (to.name !== 'login') return { name: 'login' }
+    return
+  }
+
+  if (to.name === 'login') return { name: 'home' }
 })
 
 export default router

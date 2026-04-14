@@ -18,7 +18,7 @@ SECRET_KEY = env(
     default="rqMb0EjJix5DdJpIVOKfTKGkP5WeCnaQwhQqOsIsWZQyAt80w4xlpZb3TBZgd2qv",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
+ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "django"]  # noqa: S104
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -34,7 +34,8 @@ CACHES = {
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = env(
-    "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend",
+    "DJANGO_EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
 )
 
 # WhiteNoise
@@ -71,6 +72,10 @@ if env.bool("USE_DOCKER", default=False):
 # ------------------------------------------------------------------------------
 # https://django-extensions.readthedocs.io/en/latest/installation_instructions.html#configuration
 INSTALLED_APPS += ["django_extensions"]
+
+# CSRF
+# ------------------------------------------------------------------------------
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
 # Your stuff...
 # ------------------------------------------------------------------------------

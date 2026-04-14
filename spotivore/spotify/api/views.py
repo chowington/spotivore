@@ -1,0 +1,170 @@
+from django.core.exceptions import ImproperlyConfigured
+from django.middleware.csrf import get_token
+from django.utils.crypto import get_random_string
+from django.utils.http import url_has_allowed_host_and_scheme
+from rest_framework import status
+from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from spotivore.spotify.api.serializers import SpotifyAuthorizeURLSerializer
+from spotivore.spotify.api.serializers import SpotifyConnectionSerializer
+from spotivore.spotify.api.serializers import SpotifyPlaylistSerializer
+from spotivore.spotify.api.serializers import SpotifyPlaylistTrackSerializer
+from spotivore.spotify.api.serializers import SpotifyTokenSerializer
+from spotivore.spotify.constants import SPOTIFY_OAUTH_NEXT_SESSION_KEY
+from spotivore.spotify.constants import SPOTIFY_OAUTH_STATE_SESSION_KEY
+from spotivore.spotify.models import SpotifyConnection
+from spotivore.spotify.services import SpotifyAPIError
+from spotivore.spotify.services import SpotifyOAuthService
+
+
+def get_spotify_oauth_service() -> SpotifyOAuthService:
+    return SpotifyOAuthService.from_settings()
+
+
+def get_connection_for_user(user) -> SpotifyConnection:
+    try:
+        return user.spotify_connection
+    except SpotifyConnection.DoesNotExist as exc:
+        msg = "Spotify account not connected."
+        raise NotFound(msg) from exc
+
+
+class SpotifyAuthURLView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        service = get_spotify_oauth_service()
+        try:
+            redirect_uri = service.build_redirect_uri(request)
+            state = get_random_string(32)
+            authorize_url = service.build_authorize_url(
+                state=state,
+                redirect_uri=redirect_uri,
+            )
+        except ImproperlyConfigured as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        request.session[SPOTIFY_OAUTH_STATE_SESSION_KEY] = state
+        next_url = request.query_params.get("next", "")
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+        ):
+            request.session[SPOTIFY_OAUTH_NEXT_SESSION_KEY] = next_url
+        else:
+            request.session.pop(SPOTIFY_OAUTH_NEXT_SESSION_KEY, None)
+
+        serializer = SpotifyAuthorizeURLSerializer({"authorize_url": authorize_url})
+        return Response(serializer.data)
+
+
+class SpotifyConnectionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        csrf_token = get_token(request)
+        connection = SpotifyConnection.objects.filter(user=request.user).first()
+        if connection is None:
+            return Response({"connected": False, "csrf_token": csrf_token})
+        serializer = SpotifyConnectionSerializer(connection)
+        return Response({**serializer.data, "csrf_token": csrf_token})
+
+    def delete(self, request):
+        SpotifyConnection.objects.filter(user=request.user).delete()
+        request.session.pop(SPOTIFY_OAUTH_STATE_SESSION_KEY, None)
+        request.session.pop(SPOTIFY_OAUTH_NEXT_SESSION_KEY, None)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SpotifyTokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        connection = get_connection_for_user(request.user)
+        service = get_spotify_oauth_service()
+        try:
+            access_token = service.ensure_valid_access_token(connection)
+        except ImproperlyConfigured as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        serializer = SpotifyTokenSerializer({"access_token": access_token})
+        return Response(serializer.data)
+
+
+class SpotifyPlayView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        connection = get_connection_for_user(request.user)
+        service = get_spotify_oauth_service()
+        try:
+            service.play(
+                connection,
+                device_id=request.data.get("device_id"),
+                uris=request.data.get("uris"),
+                context_uri=request.data.get("context_uri"),
+                offset=request.data.get("offset"),
+                position_ms=request.data.get("position_ms"),
+            )
+        except ImproperlyConfigured as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except SpotifyAPIError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SpotifyPlaylistListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        connection = get_connection_for_user(request.user)
+        service = get_spotify_oauth_service()
+        try:
+            playlists = service.get_current_user_playlists(connection)
+        except ImproperlyConfigured as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except SpotifyAPIError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+
+        serializer = SpotifyPlaylistSerializer(playlists, many=True)
+        return Response(serializer.data)
+
+
+class SpotifyPlaylistTracksView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, spotify_id: str):
+        if len(spotify_id) != 22 or not spotify_id.isalnum():  # noqa: PLR2004
+            raise ValidationError(
+                {"spotify_id": ["Spotify IDs must be 22 alphanumeric characters."]},
+            )
+
+        connection = get_connection_for_user(request.user)
+        service = get_spotify_oauth_service()
+        try:
+            tracks = service.get_playlist_tracks(connection, spotify_id)
+        except ImproperlyConfigured as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except SpotifyAPIError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+
+        serializer = SpotifyPlaylistTrackSerializer(tracks, many=True)
+        return Response(serializer.data)

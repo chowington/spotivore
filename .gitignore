@@ -62,12 +62,12 @@ target/
 # pyenv
 .python-version
 
-
-
 # Environments
 .env
 .envs/.local/.django
+.envs/.local/.github
 .envs/.local/.postgres
+.envs/.production/.cloudflare
 .envs/.production/.django
 .envs/.production/.postgres
 .venv
@@ -280,5 +280,6 @@ spotivore/media/
 
 .pytest_cache/
 .ipython/
-.env
-.envs/*
+
+# Claude
+n.mcp.json
