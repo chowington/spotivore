@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django
+  namespace: spotivore
+  labels:
+    app.kubernetes.io/name: spotivore
+    app.kubernetes.io/component: backend
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: django
+  template:
+    metadata:
+      labels:
+        app: django
+    spec:
+      containers:
+      - name: django
+        image: spotivore_production_django:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint", "/start"]
+        envFrom:
+        - configMapRef:
+            name: spotivore-config
+        - secretRef:
+            name: spotivore-secret
+        ports:
+        - containerPort: 5000
+          name: http
+        volumeMounts:
+        - name: django-media
+          mountPath: /app/spotivore/media
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        readinessProbe:
+          tcpSocket:
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 20
+      volumes:
+      - name: django-media
+        persistentVolumeClaim:
+          claimName: django-media
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django
+  namespace: spotivore
+  labels:
+    app.kubernetes.io/name: spotivore
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: django
+  ports:
+  - port: 5000
+    targetPort: 5000
+    name: http
